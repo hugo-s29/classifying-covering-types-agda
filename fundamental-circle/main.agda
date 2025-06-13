@@ -1,11 +1,13 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.HITs.S1 using (S¹ ; base ; loop)
 open import Cubical.Data.Sum using (_⊎_ ; inl ; inr)
-open import Cubical.Data.Int using (ℤ)
+open import Cubical.Data.Int using (ℤ ; _+_)
 open import Cubical.Data.Nat using (ℕ ; suc ; zero)
 open import Cubical.Data.Empty using (⊥)
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Isomorphism renaming (Iso to _≅_)
+open import Cubical.Foundations.Path
+open import Cubical.Foundations.GroupoidLaws
 
 {- PART I. Prove ℤ is a set -}
 
@@ -161,36 +163,102 @@ predℤ (ℤ.pos zero) = ℤ.negsuc zero
 predℤ (ℤ.pos (suc n)) = ℤ.pos n
 predℤ (ℤ.negsuc n) = ℤ.negsuc (suc n)
 
+suc∘predℤ : section sucℤ predℤ
+suc∘predℤ (ℤ.pos zero) = refl
+suc∘predℤ (ℤ.pos (suc n)) = refl
+suc∘predℤ (ℤ.negsuc zero) = refl
+suc∘predℤ (ℤ.negsuc (suc n)) = refl
+
+pred∘sucℤ : retract sucℤ predℤ
+pred∘sucℤ (ℤ.pos zero) = refl
+pred∘sucℤ (ℤ.pos (suc n)) = refl
+pred∘sucℤ (ℤ.negsuc zero) = refl
+pred∘sucℤ (ℤ.negsuc (suc n)) = refl
+
 sucℤ≡ : ℤ ≡ ℤ
-sucℤ≡ = isoToPath (iso sucℤ predℤ s r) where
+sucℤ≡ = isoToPath (iso sucℤ predℤ suc∘predℤ pred∘sucℤ)
 
-  s : section sucℤ predℤ
-  s (ℤ.pos zero) = refl
-  s (ℤ.pos (suc n)) = refl
-  s (ℤ.negsuc zero) = refl
-  s (ℤ.negsuc (suc n)) = refl
-
-  r : retract sucℤ predℤ
-  r (ℤ.pos zero) = refl
-  r (ℤ.pos (suc n)) = refl
-  r (ℤ.negsuc zero) = refl
-  r (ℤ.negsuc (suc n)) = refl
 
 
 helix : S¹ → Type
 helix base = ℤ
 helix (loop i) = sucℤ≡ i
 
-windingNumber : (x : S¹) → base ≡ x → helix x
-windingNumber _ p = subst helix p (ℤ.pos zero)
+wind : (x : S¹) → base ≡ x → helix x
+wind _ p = subst helix p (ℤ.pos zero)
 
-winding : ΩS¹ → ℤ
-winding = windingNumber base
+path-over : {A : Type} {x y : A} (B : A → Type) (p : x ≡ y) (u : B x) (v : B y) → Type
+path-over B p u v = subst B p u ≡ v
 
-{-
-Pour la suite, il faut écrire la fonction inverse :
-rewind : (x : S¹) → helix x → base ≡ x
-mais ça demande :
-- soit, en suivant plus ou moins l'approche "HoTT Game", d'utiliser PathD (qui semble avoir disparu depuis longtemps)
-- soit, en suivant plus ou moins l'approche "Cubical", d'utiliser hcomp/hfill/unglue/glue/etc...
--}
+syntax path-over B p u v = u ≡ v [ B ↓ p ]
+
+PathD : {A0 A1 : Type} (p : A0 ≡ A1) (x : A0) (y : A1) → Type
+PathD p x y = transport p x ≡ y
+
+S¹-ind : {B : S¹ → Type} → (b : B base) → PathP (λ i → B (loop i)) b b → (x : S¹) → B x
+S¹-ind b p base = b
+S¹-ind b p (loop i) = p i
+
+PathD→PathP : {A : I → Type} (x : A i0) (y : A i1) → (PathD (λ i → A i) x y) → (PathP A x y)
+PathD→PathP {A} x y = _≅_.inv (PathPIsoPath A x y)
+
+S¹-ind' : {B : S¹ → Type} → (b : B base) → PathD (λ i → B (loop i)) b b  → (x : S¹) → B x
+S¹-ind' b p = S¹-ind b (PathD→PathP b b p)
+
+id : {A : Type} → A → A
+id x = x
+
+transport-refl : {A : Type} (x : A) → transport (refl {x = A}) x ≡ x
+transport-refl x = JRefl (λ y _ → y) x
+
+transport-path-fibration : {A : Type} {x y z : A} (q : x ≡ y) (p : y ≡ z) → transport (λ i → x ≡ p i) q ≡ q ∙ p
+transport-path-fibration  {_} {x} q = J (λ _ p → transport (λ i → x ≡ p i) q ≡ q ∙ p)
+  (
+    transport refl q
+  ≡⟨ transport-refl q ⟩
+    q
+  ≡⟨ rUnit q ⟩
+    q ∙ refl ∎
+  )
+
+loops∙loop-suc : (n : ℤ) → loop n times ∙ loop ≡ loop sucℤ n times
+loops∙loop-suc (ℤ.pos n) = refl
+loops∙loop-suc (ℤ.negsuc zero) = lCancel loop
+loops∙loop-suc (ℤ.negsuc (suc n)) =
+    (loop ℤ.negsuc n times ∙ loop⁻¹) ∙ loop
+  ≡⟨ sym (assoc _ _ _) ⟩
+    loop ℤ.negsuc n times ∙ (loop⁻¹ ∙ loop)
+  ≡⟨ cong (λ p → loop (ℤ.negsuc n) times ∙ p) (lCancel _) ⟩
+    loop (ℤ.negsuc n) times ∙ refl
+  ≡⟨ sym (rUnit _) ⟩
+    loop (ℤ.negsuc n) times ∎
+
+
+unwind : (x : S¹) → helix x → base ≡ x
+unwind = S¹-ind' {B = λ x → helix x → base ≡ x} loop_times (
+    transport (λ i → sucℤ≡ i → base ≡ loop i) loop_times
+  ≡⟨ refl ⟩
+    (λ n → transport (λ i → base ≡ loop i) (loop (transport (sym sucℤ≡) n) times))
+  ≡⟨ refl ⟩
+    (λ n → transport (λ i → base ≡ loop i) (loop (predℤ n) times))
+  ≡⟨ funExt (λ n →
+      loop predℤ n times ∙ loop
+    ≡⟨ loops∙loop-suc (predℤ n) ⟩
+      loop (sucℤ (predℤ n)) times
+    ≡⟨ cong loop_times (suc∘predℤ n) ⟩
+      loop n times ∎
+  )⟩
+    loop_times ∎
+  )
+
+ΩS¹≡ℤ : ΩS¹ ≡ ℤ
+ΩS¹≡ℤ = isoToPath (iso (wind base) (unwind base) s (r base)) where
+
+  s : section (wind base) (unwind base)
+  s (ℤ.pos zero) = refl
+  s (ℤ.pos (suc n)) = cong sucℤ (s (ℤ.pos n))
+  s (ℤ.negsuc zero) = refl
+  s (ℤ.negsuc (suc n)) = cong predℤ (s (ℤ.negsuc n))
+
+  r : (x : S¹) → retract (wind x) (unwind x)
+  r x p = J (λ x' p' → unwind x' (wind x' p') ≡ p') refl p
