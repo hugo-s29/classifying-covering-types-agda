@@ -178,7 +178,8 @@ pred∘sucℤ (ℤ.negsuc (suc n)) = refl
 sucℤ≡ : ℤ ≡ ℤ
 sucℤ≡ = isoToPath (iso sucℤ predℤ suc∘predℤ pred∘sucℤ)
 
-
+predℤ≡ : ℤ ≡ ℤ
+predℤ≡ = sym sucℤ≡
 
 helix : S¹ → Type
 helix base = ℤ
@@ -205,17 +206,11 @@ PathD→PathP {A} x y = _≅_.inv (PathPIsoPath A x y)
 S¹-ind' : {B : S¹ → Type} → (b : B base) → PathD (λ i → B (loop i)) b b  → (x : S¹) → B x
 S¹-ind' b p = S¹-ind b (PathD→PathP b b p)
 
-id : {A : Type} → A → A
-id x = x
-
-transport-refl : {A : Type} (x : A) → transport (refl {x = A}) x ≡ x
-transport-refl x = JRefl (λ y _ → y) x
-
 transport-path-fibration : {A : Type} {x y z : A} (q : x ≡ y) (p : y ≡ z) → transport (λ i → x ≡ p i) q ≡ q ∙ p
 transport-path-fibration  {_} {x} q = J (λ _ p → transport (λ i → x ≡ p i) q ≡ q ∙ p)
   (
     transport refl q
-  ≡⟨ transport-refl q ⟩
+  ≡⟨ JRefl (λ a _ → a) q ⟩
     q
   ≡⟨ rUnit q ⟩
     q ∙ refl ∎
@@ -238,7 +233,7 @@ unwind : (x : S¹) → helix x → base ≡ x
 unwind = S¹-ind' {B = λ x → helix x → base ≡ x} loop_times (
     transport (λ i → sucℤ≡ i → base ≡ loop i) loop_times
   ≡⟨ refl ⟩
-    (λ n → transport (λ i → base ≡ loop i) (loop (transport (sym sucℤ≡) n) times))
+    (λ n → transport (λ i → base ≡ loop i) (loop (transport predℤ≡ n) times))
   ≡⟨ refl ⟩
     (λ n → transport (λ i → base ≡ loop i) (loop (predℤ n) times))
   ≡⟨ funExt (λ n →
