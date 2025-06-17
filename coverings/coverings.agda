@@ -171,7 +171,7 @@ Covering₀A≅A→Set {A} = iso Covering₀A→A→Set Covering₀A←A→Set C
           map₁-lemma₁ =
               fst (transport (λ i → Σ B (λ x₁ → f x₁ ≡ r i)) (map₁-fun (a , b , r) , (λ _ → f (map₁-fun (a , b , r)))))
             ≡⟨⟩
-              transp (λ _ → B) i0 b
+              subst {A = ⊤} (λ _ → B) refl b
             ≡⟨ JRefl (λ a _ → a) b ⟩
               b ∎
 
@@ -180,14 +180,14 @@ Covering₀A≅A→Set {A} = iso Covering₀A→A→Set Covering₀A←A→Set C
 
           map₁-lemma₂ : subst (λ x → f x ≡ a) map₁-lemma₁ (transp (λ i → f (transp (λ _ → B) (~ i) b) ≡ r i) i0 refl) ≡ r
           map₁-lemma₂ = J (λ a' r' → subst (λ x → f x ≡ a') map₁-lemma₁ (transp (λ i → f (transp (λ _ → B) (~ i) b) ≡ r' i) i0 refl) ≡ r') (
-                subst (λ x → f x ≡ f (transp (λ _ → B) (~ i0) b)) map₁-lemma₁ (transp (λ i → f (transp (λ _ → B) (~ i) b) ≡ refl {x = f b} i) i0 refl)
-              ≡⟨ cong (subst (λ x → f x ≡ f (transp (λ _ → B) (~ i0) b)) map₁-lemma₁) {!!} ⟩
-                subst (λ x → f x ≡ f (transp (λ _ → B) (~ i0) b)) map₁-lemma₁ {!!}
-              ≡⟨ {!!} ⟩
+                subst (λ x → f x ≡ f (transp (λ _ → B) (~ i0) b)) map₁-lemma₁ (transp (λ i → f (transp (λ _ → B) (~ i) b) ≡ f b) i0 refl)
+              ≡⟨⟩
+                subst (λ x → f x ≡ f b) map₁-lemma₁ (subst (λ x → f x ≡ f b) (λ i → transp (λ _ → B) (~ i) b) refl)
+              ≡⟨ JRefl {!!} {!!} ⟩
                 refl ∎
             ) r where
 
-            mini-lemma : transp (λ i → f (transp (λ _ → B) (~ i) b) ≡ refl {x = f b} i) i0 refl ≡ {!!}
+            mini-lemma : subst (λ x → f x ≡ f b) (λ i → transp (λ _ → B) (~ i) b) refl ≡ {!!}
             mini-lemma = {!!}
 
 {-
