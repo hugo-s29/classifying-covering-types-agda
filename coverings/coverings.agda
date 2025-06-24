@@ -1,15 +1,25 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Data.Sigma hiding (_×_)
-open import Cubical.Data.Prod
 open import Cubical.Data.Empty
+open import Cubical.Data.Nat
+open import Cubical.Data.Prod
+open import Cubical.Data.Sigma hiding (_×_)
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
-open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism renaming (Iso to _≅_)
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Univalence
 open import Cubical.Functions.Fibration
-open import Cubical.Categories.Category
+open import Cubical.Functions.Embedding
+open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥-∥ₕ-map ; elim to ∥-∥ₕ-elim)
+open import Cubical.HITs.SetTruncation renaming (rec to ∥-∥₂-rec ; map to ∥-∥₂-map ; elim to ∥-∥₂-elim)
+open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; elim to ∥-∥-elim)
+open import Cubical.Homotopy.Connected
+open import Cubical.WildCat.Base
+open import Pullback
 
 cong-fun : {A B : Type} (f g : A → B) (p : f ≡ g) (x : A) → f x ≡ g x
 cong-fun f _ p x = J (λ g' _ → f x ≡ g' x) refl p
@@ -17,11 +27,8 @@ cong-fun f _ p x = J (λ g' _ → f x ≡ g' x) refl p
 Set : Type₁
 Set = Σ Type (λ A → isSet A)
 
-fib : {A B : Type} → (A → B) → B → Type
-fib {A} f y = Σ A (λ x → f x ≡ y)
-
 isCovering₀ : {A B : Type} (f : B → A) → Type
-isCovering₀ {A} f = (y : A) → isSet (fib f y)
+isCovering₀ {A} f = (y : A) → isSet (fiber f y)
 
 record Covering₀ (A : Type) : Type₁ where
   field
@@ -38,24 +45,24 @@ Covering₀A≃A→Set : {A : Type} → Covering₀ A ≃ (A → Set)
 Covering₀A≃A→Set {A} =
     Covering₀ A
   ≃⟨ equiv₁ ⟩
-    Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fib f x))
+    Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fiber f x))
   ≃⟨ equiv₂ ⟩
     Σ (A → Type) (λ f⁻¹ → (x : A) → isSet (f⁻¹ x))
   ≃⟨ equiv₃ ⟩
     (A → Set)
   ■  where
 
-  equiv₁ : Covering₀ A ≃ Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fib f x))
+  equiv₁ : Covering₀ A ≃ Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fiber f x))
   equiv₁ = isoToEquiv (iso to of (λ _ → refl) (λ _ → refl)) where
 
-    to : Covering₀ A → Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fib f x))
+    to : Covering₀ A → Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fiber f x))
     to record { B = B ; f = f ; p = p } = (B , f) , p
 
-    of : Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fib f x)) → Covering₀ A
+    of : Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fiber f x)) → Covering₀ A
     of ((B , f) , p) = record { B = B ; f = f ; p = p }
 
 
-  equiv₂ : Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fib f x)) ≃ Σ (A → Type) (λ f⁻¹ → (x : A) → isSet (f⁻¹ x))
+  equiv₂ : Σ (Σ Type (λ B → B → A)) (λ (_ , f) → (x : A) → isSet (fiber f x)) ≃ Σ (A → Type) (λ f⁻¹ → (x : A) → isSet (f⁻¹ x))
   equiv₂ = Σ-cong-equiv-fst (fibrationEquiv A ℓ-zero)
 
   equiv₃ : Σ (A → Type) (λ f⁻¹ → (x : A) → isSet (f⁻¹ x)) ≃ (A → Set)
@@ -73,8 +80,8 @@ record { B = B ; f = f } →Cov₀ record { B = C ; f = g } = Σ (B → C) (λ h
 UniversalCovering₀ : (A : Type) → Type₁
 UniversalCovering₀ A = Σ (Covering₀ A) (λ Cᵤ → (C : Covering₀ A) → Cᵤ →Cov₀ C)
 
-id→Cov₀ : {A : Type} → {C : Covering₀ A} → C →Cov₀ C
-id→Cov₀ = (λ z → z) , λ _ → refl
+idCov₀ : {A : Type} → {C : Covering₀ A} → C →Cov₀ C
+idCov₀ = (λ z → z) , λ _ → refl
 
 ∘→Cov₀ : {A : Type} {B C D : Covering₀ A} → B →Cov₀ C → C →Cov₀ D → B →Cov₀ D
 ∘→Cov₀ {A} {B} {C} {D} (q₁ , p₁) (q₂ , p₂) = q₂ ∘ q₁ , (λ x →
@@ -85,6 +92,9 @@ id→Cov₀ = (λ z → z) , λ _ → refl
       B .Covering₀.f x ∎
   )
 
+_∘Cov₀_ : {A : Type} {B C D : Covering₀ A} → C →Cov₀ D → B →Cov₀ C → B →Cov₀ D
+_∘Cov₀_ {A} {B} {C} {D} f g = ∘→Cov₀ {A} {B} {C} {D} g f
+
 ∘→Cov₀-snd : {A : Type} {B C D : Covering₀ A} ((u , pu) : B →Cov₀ C) ((v , pv) : C →Cov₀ D) (x : B .Covering₀.B) → (∘→Cov₀ {A} {B} {C} {D} (u , pu) (v , pv) .snd x) ≡ (pv (u x)) ∙ pu x
 ∘→Cov₀-snd {A} {B} {C} {D} (u , pu) (v , pv) x =
     ∘→Cov₀ {A} {B} {C} {D} (u , pu) (v , pv) .snd x
@@ -94,7 +104,7 @@ id→Cov₀ = (λ z → z) , λ _ → refl
     pv (u x) ∙ pu x ∎
 
 
-∘→Cov₀-IdL : {A : Type} {B C : Covering₀ A} (f : B →Cov₀ C) → ∘→Cov₀ {A} {B} {B} {C} (id→Cov₀ {A} {B}) f ≡ f
+∘→Cov₀-IdL : {A : Type} {B C : Covering₀ A} (f : B →Cov₀ C) → ∘→Cov₀ {A} {B} {B} {C} (idCov₀ {A} {B}) f ≡ f
 ∘→Cov₀-IdL {A} {B} {C} (h , p) = ΣPathP ((λ _ x → h x) , funExt (λ x →
       (p x) ∙ (refl ∙ refl)
     ≡⟨ cong (_∙_ (p x)) (sym (rUnit refl)) ⟩
@@ -103,7 +113,7 @@ id→Cov₀ = (λ z → z) , λ _ → refl
       p x ∎
   ))
 
-∘→Cov₀-IdR : {A : Type} {B C : Covering₀ A} (f : B →Cov₀ C) → ∘→Cov₀ {A} {B} {C} {C} f (id→Cov₀ {A} {C}) ≡ f
+∘→Cov₀-IdR : {A : Type} {B C : Covering₀ A} (f : B →Cov₀ C) → ∘→Cov₀ {A} {B} {C} {C} f (idCov₀ {A} {C}) ≡ f
 ∘→Cov₀-IdR {A} {B} {C} (h , p) = ΣPathP ((λ _ x → h x) , funExt (λ x → 
       refl ∙ (p x ∙ refl)
     ≡⟨ sym (lUnit (p x ∙ refl)) ⟩
@@ -136,23 +146,95 @@ id→Cov₀ = (λ z → z) , λ _ → refl
   lemma₃ : (x : B .Covering₀.B) ((u , pu) : B →Cov₀ C) ((v , pv) : C →Cov₀ D) ((w , pw) : D →Cov₀ E) → (∘→Cov₀ {A} {C} {D} {E} (v , pv) (w , pw) .snd (u x)) ≡ ((pw (v (u x))) ∙ (pv (u x)))
   lemma₃ x (u , pu) (v , pv) (w , pw) = ∘→Cov₀-snd {A} {C} {D} {E} (v , pv) (w , pw) (u x)
 
-isSet-B-Cov₀ : {A : Type} {C : Covering₀ A} → isSet (C .Covering₀.B)
-isSet-B-Cov₀ = {!!} -- C'est juste faux, ça :(
+{-
+Cov₀Cat : (A : Type) → WildCat (ℓ-suc ℓ-zero) ℓ-zero
+Cov₀Cat A = record
+           { ob = Covering₀ A
+           ; Hom[_,_] = _→Cov₀_
+           ; id = idCov₀
+           ; _⋆_ = ∘→Cov₀
+           ; ⋆IdL = ∘→Cov₀-IdL
+           ; ⋆IdR = ∘→Cov₀-IdL
+           ; ⋆Assoc = ∘→Cov₀-Assoc
+           }
+-}
 
-isSet→Cov₀ : {A : Type} {B C : Covering₀ A} → isSet (B →Cov₀ C)
-isSet→Cov₀ = isSetΣ (isSetΠ (λ x → {!!})) (λ x → {!!}) -- Pas sûr que ça soit prouvable, c'est peut-être faux
+isConnected' : (A : Type) → Type
+isConnected' A = Σ A (λ a → ∀ b → ∥ a ≡ b ∥₁)
 
-Covering₀-Category : (A : Type) → Category (ℓ-suc ℓ-zero) ℓ-zero
-Covering₀-Category A = record
-                        { ob = Covering₀ A
-                        ; Hom[_,_] = _→Cov₀_
-                        ; id = id→Cov₀
-                        ; _⋆_ = ∘→Cov₀
-                        ; ⋆IdL = ∘→Cov₀-IdL
-                        ; ⋆IdR = ∘→Cov₀-IdL
-                        ; ⋆Assoc = ∘→Cov₀-Assoc
-                        ; isSetHom = isSet→Cov₀
-                        }
+isConnected'IsProp : {A : Type} {a : A} → isProp (∀ b → ∥ a ≡ b ∥₁)
+isConnected'IsProp = isPropΠ (λ _ → isPropPropTrunc)
 
--- UnivCoveing₀-≅ : {A : Type} (Cᵤ Cᵤ' : UniversalCovering₀ A) → Cᵤ ≅ Cᵤ'
--- UnivCoveing₀-≅ Cᵤ Cᵤ' = ?
+isConnected'Σ : {A : Type} {B : A → Type} → isConnected' A → (∀ x → isConnected' (B x)) → isConnected' (Σ A B)
+isConnected'Σ {A} {B} (⋆ , hA) hB = (⋆ , hB ⋆ .fst) , {!!} where
+
+  path : (x : Σ A B) → ∥ (⋆ , hB ⋆ .fst) ≡ x ∥₁
+  path (a , b) = {!!} -- ∥-∥-elim {P = λ p → (q : {!!} ≡ b) → ∥ (⋆ , hB ⋆ .fst) ≡ (a , b) ∥₁} (λ a₁ → {!!}) {!!} (hA a) {!!}
+
+module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' (fst A∙))
+  (hyp-conBG : isConnected' (fst BG∙)) (Bi∙ : ⟨ BG∙ ⟩ ↪ (∥ ⟨ A∙ ⟩ ∥ 3)) where
+
+  A : Type
+  A = fst A∙
+
+  BG : Type
+  BG = fst BG∙
+
+  Bi : BG → ∥ A ∥ 3
+  Bi = fst Bi∙
+
+  X : Type
+  X = pullbackΣ {C = ∥ A ∥ 3} Bi ∣_∣ -- This is written as "\|" not just | because | ≠ ∣ in Unicode
+
+  p : X → A
+  p = pullbackΣ-proj₂
+
+  pick : {W : Type} (a : W) → ⊤ → W
+  pick x tt = x
+
+  F : A → Type
+  F a = Pullback p (pick a)
+
+  F' : A → Type
+  F' a = Pullback Bi (∣_∣ ∘ pick a)
+
+  fib-p≡fib-Bi : (a : A) → fiber p a ≡ fiber Bi ∣ a ∣
+  fib-p≡fib-Bi a =
+      fiber p a
+    ≡⟨ sym (Pullback-fiber₂ p (pick a)) ⟩
+      F a
+    ≡⟨ sym (PastingLemma.pasting-lemma (pick a) ∣_∣ Bi) ⟩
+      F' a
+    ≡⟨ Pullback-fiber₂ Bi (∣_∣ ∘ pick a) ⟩
+      fiber Bi ∣ a ∣ ∎
+
+  isSet-fib-Bi : (a : A) → isSet (fiber Bi ∣ a ∣)
+  isSet-fib-Bi a = isProp→isSet (isEmbedding→hasPropFibers (Bi∙ .snd) ∣ a ∣)
+
+  p-isCov₀ : isCovering₀ p
+  p-isCov₀ a = subst isSet (sym (fib-p≡fib-Bi a)) (isSet-fib-Bi a)
+
+  subgroup→covering₀ : Covering₀ A
+  subgroup→covering₀ = record { B = X ; f = p ; p = p-isCov₀ }
+
+  X≡Σfibp : X ≡ Σ A (fiber p)
+  X≡Σfibp = ua (totalEquiv p)
+
+  connected : isConnected' X
+  connected = {!!}
+
+  Ã : Type
+  Ã = Pullback {A = ⊤} (pick (Bi (pt BG∙))) ∣_∣
+
+  Ã-is-connected : isConnected' Ã
+  Ã-is-connected = {!!}
+
+module ConnectedCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = X ; f = p ; p = fib-set }) : Covering₀ ⟨ A∙ ⟩) where
+  A : Type
+  A = ⟨ A∙ ⟩
+
+  Bi : ∥ X ∥ 3 → ∥ A ∥ 3
+  Bi = ∥-∥ₕ-map p
+
+  Bi-embedding : isEmbedding Bi
+  Bi-embedding = hasPropFibers→isEmbedding {!!}
