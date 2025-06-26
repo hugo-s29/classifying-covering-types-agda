@@ -11,12 +11,13 @@ open import Cubical.Foundations.Isomorphism renaming (Iso to _≅_)
 open import Cubical.Foundations.Pointed
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Univalence
 open import Cubical.Functions.Fibration
 open import Cubical.Functions.Embedding
 open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥-∥ₕ-map ; elim to ∥-∥ₕ-elim)
 open import Cubical.HITs.SetTruncation renaming (rec to ∥-∥₂-rec ; map to ∥-∥₂-map ; elim to ∥-∥₂-elim)
-open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; elim to ∥-∥-elim)
+open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; map2 to ∥-∥-map2 ; elim to ∥-∥-elim)
 open import Cubical.Homotopy.Connected
 open import Cubical.WildCat.Base
 open import Pullback
@@ -162,22 +163,43 @@ Cov₀Cat A = record
 isConnected' : (A : Type) → Type
 isConnected' A = Σ A (λ a → ∀ b → ∥ a ≡ b ∥₁)
 
-isConnected'IsProp : {A : Type} {a : A} → isProp (∀ b → ∥ a ≡ b ∥₁)
-isConnected'IsProp = isPropΠ (λ _ → isPropPropTrunc)
-
 isConnected'Σ : {A : Type} {B : A → Type} → isConnected' A → (∀ x → isConnected' (B x)) → isConnected' (Σ A B)
-isConnected'Σ {A} {B} (⋆ , hA) hB = (⋆ , hB ⋆ .fst) , {!!} where
+isConnected'Σ {A} {B} (⋆A , hA) hB = (⋆A , ⋆B) , λ b → Σ∥-∥₁ (path b) where
+  ⋆B : B ⋆A
+  ⋆B = hB ⋆A .fst
 
-  path : (x : Σ A B) → ∥ (⋆ , hB ⋆ .fst) ≡ x ∥₁
-  path (a , b) = {!!} -- ∥-∥-elim {P = λ p → (q : {!!} ≡ b) → ∥ (⋆ , hB ⋆ .fst) ≡ (a , b) ∥₁} (λ a₁ → {!!}) {!!} (hA a) {!!}
+  Σ∥-∥₁ : {x y : Σ A B} → ∥ (ΣPathTransport x y) ∥₁ → ∥ x ≡ y ∥₁
+  Σ∥-∥₁ {x} {y} = ∥-∥-map  (ΣPathTransport→PathΣ x y)
 
-module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' (fst A∙))
-  (hyp-conBG : isConnected' (fst BG∙)) (Bi∙ : ⟨ BG∙ ⟩ ↪ (∥ ⟨ A∙ ⟩ ∥ 3)) where
+  path' : ((a , b) : Σ A B) → ∥ ∥ Σ (⋆A ≡ a) (λ p → subst B p ⋆B ≡ b) ∥₁ ∥₁
+  path' (a , b) =
+    let (⋆a , hB') = hB a in
+    ∥-∥-map (λ p →
+      ∥-∥-map2 (λ pu pb → p , (pu ⁻¹ ∙ pb)) (hB' (subst B p ⋆B)) (hB' b)
+    ) (hA a)
 
-  A : Type
-  A = fst A∙
+  path : ((a , b) : Σ A B) → ∥ Σ (⋆A ≡ a) (λ p → subst B p ⋆B ≡ b) ∥₁
+  path x = transport (propTruncIdempotent isPropPropTrunc) (path' x)
 
-  BG : Type
+isConnected'IsProp : {A : Type} → isProp (isConnected' A)
+isConnected'IsProp = {! !} -- No idea where to start :(  (I wanted to make the equivalence with the isConnected 2 A, but it seems to be way harder than I thought)...
+
+module UniversalCovering (A∙ : Pointed ℓ-zero) ((⋆A' , conA) : isConnected' ⟨ A∙ ⟩) where
+  A = ⟨ A∙ ⟩
+  ⋆A = pt A∙
+
+  Ã = Σ A (λ a → ∥ ⋆A ≡ a ∥ 2)
+
+  connected : isConnected' Ã -- propTrunc≡Trunc2... that's a fabulous name... completely wrong though
+  connected = (⋆A , ∣ refl ∣) , λ (a , p) → ∥-∥ₕ-elim {B = λ p → ∥ (⋆A , ∣ refl ∣) ≡ (a , p) ∥₁} (λ _ → isProp→isSet isPropPropTrunc) (λ p →
+      J (λ a p → ∥ Path Ã (⋆A , ∣ refl ∣) (a , ∣ p ∣) ∥₁) ∣ refl ∣₁ p
+    ) p
+
+module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' ⟨ A∙ ⟩ )
+  (hyp-conBG : isConnected' ⟨ BG∙ ⟩) (Bi∙ : ⟨ BG∙ ⟩ ↪ (∥ ⟨ A∙ ⟩ ∥ 3)) where
+
+  A = ⟨ A∙ ⟩
+
   BG = fst BG∙
 
   Bi : BG → ∥ A ∥ 3
@@ -188,6 +210,9 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
 
   p : X → A
   p = pullbackΣ-proj₂
+
+  u : X → BG
+  u = pullbackΣ-proj₁
 
   pick : {W : Type} (a : W) → ⊤ → W
   pick x tt = x
@@ -203,7 +228,7 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
       fiber p a
     ≡⟨ sym (Pullback-fiber₂ p (pick a)) ⟩
       F a
-    ≡⟨ sym (PastingLemma.pasting-lemma (pick a) ∣_∣ Bi) ⟩
+    ≡⟨ sym (PastingLemma-horizontal.pasting-lemma (pick a) ∣_∣ Bi) ⟩
       F' a
     ≡⟨ Pullback-fiber₂ Bi (∣_∣ ∘ pick a) ⟩
       fiber Bi ∣ a ∣ ∎
@@ -217,17 +242,39 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
   subgroup→covering₀ : Covering₀ A
   subgroup→covering₀ = record { B = X ; f = p ; p = p-isCov₀ }
 
-  X≡Σfibp : X ≡ Σ A (fiber p)
-  X≡Σfibp = ua (totalEquiv p)
+  X≡Σfibu : X ≡ Σ BG (fiber u)
+  X≡Σfibu = ua (totalEquiv u)
+
+  Ã : (x : ∥ A ∥ 3) → Type
+  Ã x = Pullback {A = ⊤} (pick x) ∣_∣
+
+  Ã≡fibu : (x : BG) → Ã (Bi x) ≡ fiber u x
+  Ã≡fibu x =
+      Pullback {A = ⊤} (Bi ∘ (pick x)) ∣_∣
+    ≡⟨ PastingLemma-vertical.pasting-lemma (pick x) Bi ∣_∣ ⟩
+      Pullback {A = ⊤} (pick x) u
+    ≡⟨ Pullback-fiber₁ (pick x) u ⟩
+      fiber u x ∎
+
+  isConnected'Ã : (x : ∥ A ∥ 3) → isConnected' (Ã x)
+  isConnected'Ã = ∥-∥ₕ-elim (λ x → isSet→isGroupoid (isProp→isSet isConnected'IsProp)) λ a → isConnected'Ã∣a∣ a where
+
+    isConnected'Ã∣a∣ : (a : A) → isConnected' (Ã ∣ a ∣)
+    isConnected'Ã∣a∣ a = subst isConnected' (
+        Σ A (λ a' → ∥ a ≡ a' ∥ 2)
+      ≡⟨ Σ-cong-snd (λ x → sym (PathIdTrunc 2)) ⟩
+        Σ A (λ a' → ∣ a ∣ ≡ ∣ a' ∣)
+      ≡⟨ Σ-cong-snd (λ x → isoToPath (iso sym sym (λ _ → refl) (λ _ → refl))) ⟩
+        fiber ∣_∣ ∣ a ∣
+      ≡⟨ Pullback-fiber₁ (pick ∣ a ∣) ∣_∣ ⁻¹ ⟩
+        Pullback {A = ⊤} (pick ∣ a ∣) ∣_∣  ∎
+      ) (UniversalCovering.connected (A , a) hyp-conA)
+
+  isConnected'-fibu : (x : BG) → isConnected' (fiber u x)
+  isConnected'-fibu x = subst isConnected' (Ã≡fibu x) (isConnected'Ã (Bi x))
 
   connected : isConnected' X
-  connected = {!!}
-
-  Ã : Type
-  Ã = Pullback {A = ⊤} (pick (Bi (pt BG∙))) ∣_∣
-
-  Ã-is-connected : isConnected' Ã
-  Ã-is-connected = {!!}
+  connected = subst isConnected' (sym X≡Σfibu) (isConnected'Σ hyp-conBG isConnected'-fibu)
 
 module ConnectedCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = X ; f = p ; p = fib-set }) : Covering₀ ⟨ A∙ ⟩) where
   A : Type
