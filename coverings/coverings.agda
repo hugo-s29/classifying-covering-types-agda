@@ -1,7 +1,6 @@
 open import Cubical.Data.Empty
 open import Cubical.Data.Nat
-open import Cubical.Data.Prod
-open import Cubical.Data.Sigma hiding (_×_)
+open import Cubical.Data.Sigma
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
@@ -15,15 +14,15 @@ open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Univalence
 open import Cubical.Functions.Fibration
 open import Cubical.Functions.Embedding
-open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥-∥ₕ-map ; elim to ∥-∥ₕ-elim)
+open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥-∥ₕ-map ; elim to ∥-∥ₕ-elim ; map2 to ∥-∥ₕ-map2 ; elim2 to ∥-∥ₕ-elim2)
 open import Cubical.HITs.SetTruncation renaming (rec to ∥-∥₂-rec ; map to ∥-∥₂-map ; elim to ∥-∥₂-elim)
-open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; map2 to ∥-∥-map2 ; elim to ∥-∥-elim)
+open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; map2 to ∥-∥-map2 ; elim to ∥-∥-elim ; elim2 to ∥-∥-elim2 ; elim3 to ∥-∥-elim3)
 open import Cubical.Homotopy.Connected
 open import Cubical.WildCat.Base
 open import Pullback
 
-cong-fun : {A B : Type} (f g : A → B) (p : f ≡ g) (x : A) → f x ≡ g x
-cong-fun f _ p x = J (λ g' _ → f x ≡ g' x) refl p
+pick : {W : Type} (a : W) → ⊤ → W
+pick x tt = x
 
 Set : Type₁
 Set = Σ Type (λ A → isSet A)
@@ -77,9 +76,6 @@ Covering₀A≃A→Set {A} =
 
 _→Cov₀_ : {A : Type} → Covering₀ A → Covering₀ A → Type
 record { B = B ; f = f } →Cov₀ record { B = C ; f = g } = Σ (B → C) (λ h → (x : B) → g (h x) ≡ f x)
-
-UniversalCovering₀ : (A : Type) → Type₁
-UniversalCovering₀ A = Σ (Covering₀ A) (λ Cᵤ → (C : Covering₀ A) → Cᵤ →Cov₀ C)
 
 idCov₀ : {A : Type} → {C : Covering₀ A} → C →Cov₀ C
 idCov₀ = (λ z → z) , λ _ → refl
@@ -161,42 +157,49 @@ Cov₀Cat A = record
 -}
 
 isConnected' : (A : Type) → Type
-isConnected' A = Σ A (λ a → ∀ b → ∥ a ≡ b ∥₁)
-
-isConnected'Σ : {A : Type} {B : A → Type} → isConnected' A → (∀ x → isConnected' (B x)) → isConnected' (Σ A B)
-isConnected'Σ {A} {B} (⋆A , hA) hB = (⋆A , ⋆B) , λ b → Σ∥-∥₁ (path b) where
-  ⋆B : B ⋆A
-  ⋆B = hB ⋆A .fst
-
-  Σ∥-∥₁ : {x y : Σ A B} → ∥ (ΣPathTransport x y) ∥₁ → ∥ x ≡ y ∥₁
-  Σ∥-∥₁ {x} {y} = ∥-∥-map  (ΣPathTransport→PathΣ x y)
-
-  path' : ((a , b) : Σ A B) → ∥ ∥ Σ (⋆A ≡ a) (λ p → subst B p ⋆B ≡ b) ∥₁ ∥₁
-  path' (a , b) =
-    let (⋆a , hB') = hB a in
-    ∥-∥-map (λ p →
-      ∥-∥-map2 (λ pu pb → p , (pu ⁻¹ ∙ pb)) (hB' (subst B p ⋆B)) (hB' b)
-    ) (hA a)
-
-  path : ((a , b) : Σ A B) → ∥ Σ (⋆A ≡ a) (λ p → subst B p ⋆B ≡ b) ∥₁
-  path x = transport (propTruncIdempotent isPropPropTrunc) (path' x)
+isConnected' A = ∥ A ∥₁ × ((x y : A) → ∥ x ≡ y ∥₁)
 
 isConnected'IsProp : {A : Type} → isProp (isConnected' A)
-isConnected'IsProp = {! !} -- No idea where to start :(  (I wanted to make the equivalence with the isConnected 2 A, but it seems to be way harder than I thought)...
+isConnected'IsProp {A} = isProp× isPropPropTrunc (isPropΠ λ _ → isPropΠ λ _ → isPropPropTrunc)
 
-module UniversalCovering (A∙ : Pointed ℓ-zero) ((⋆A' , conA) : isConnected' ⟨ A∙ ⟩) where
+isConnected'Σ : {A : Type} {B : A → Type} → isConnected' A → (∀ x → isConnected' (B x)) → isConnected' (Σ A B)
+isConnected'Σ {A} {B} (⋆A , hA) hB = basept , path where
+
+  basept' : ∥ ∥ Σ A B ∥₁ ∥₁
+  basept' = ∥-∥-map (λ ⋆A → ∥-∥-map (λ ⋆B → (⋆A , ⋆B)) (hB ⋆A .fst)) ⋆A
+
+  basept : ∥ Σ A B ∥₁
+  basept = transport (propTruncIdempotent isPropPropTrunc) basept'
+
+  path' : (a a' : A) (b : B a) (b' : B a') → ∥ ∥ (a , b) ≡ (a' , b') ∥₁ ∥₁
+  path' a a' b b' = ∥-∥-map (λ p → ∥-∥-map (λ q →  ΣPathTransport→PathΣ (a , b) (a' , b') (p , q)) (hB a' .snd (subst B p b) b')) (hA a a')
+
+  path : (x y : Σ A B) → ∥ x ≡ y ∥₁
+  path (a , b) (a' , b') = transport (propTruncIdempotent isPropPropTrunc) (path' a a' b b')
+
+module UniversalCovering (A∙ : Pointed ℓ-zero) ((_ , conA) : isConnected' ⟨ A∙ ⟩) where
   A = ⟨ A∙ ⟩
   ⋆A = pt A∙
 
   Ã = Σ A (λ a → ∥ ⋆A ≡ a ∥ 2)
 
-  connected : isConnected' Ã -- propTrunc≡Trunc2... that's a fabulous name... completely wrong though
-  connected = (⋆A , ∣ refl ∣) , λ (a , p) → ∥-∥ₕ-elim {B = λ p → ∥ (⋆A , ∣ refl ∣) ≡ (a , p) ∥₁} (λ _ → isProp→isSet isPropPropTrunc) (λ p →
-      J (λ a p → ∥ Path Ã (⋆A , ∣ refl ∣) (a , ∣ p ∣) ∥₁) ∣ refl ∣₁ p
-    ) p
+  connected : isConnected' Ã
+  connected = ∣ (⋆A , ∣ refl ∣) ∣₁ , lemma₂ where
+
+    lemma₀ : (a b : A) (p : ⋆A ≡ a) (q : ⋆A ≡ b) → (a , ∣ p ∣) ≡ (b , ∣ q ∣)
+    lemma₀ a b = J (λ a p → (q : ⋆A ≡ b) → (a , ∣ p ∣) ≡ (b , ∣ q ∣)) (J (λ b q → (⋆A , ∣ refl ∣) ≡ (b , ∣ q ∣)) refl)
+
+    lemma₁ : (a : A) (p : ⋆A ≡ a) (y : Ã) → ∥ (a , ∣ p ∣) ≡ y ∥₁
+    lemma₁ a p (b , q) = ∥-∥ₕ-elim {B = λ q → ∥ (a , ∣ p ∣) ≡ (b , q) ∥₁} (λ _ → isProp→isSet isPropPropTrunc) (λ q → ∣ lemma₀ a b p q ∣₁) q
+
+    lemma₂ : (x y : Ã) → ∥ x ≡ y ∥₁
+    lemma₂ (a , p) = ∥-∥ₕ-elim {B = λ p → (y : Ã) → ∥ (a , p) ≡ y ∥₁} (λ _ → isProp→isSet (isPropΠ (λ _ → isPropPropTrunc))) (lemma₁ a) p
+
+_B↪_ : (X Y : Type) → Type
+X B↪ Y = Σ (X → Y) (λ f → (y : Y) → isSet (fiber f y))
 
 module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' ⟨ A∙ ⟩ )
-  (hyp-conBG : isConnected' ⟨ BG∙ ⟩) (Bi∙ : ⟨ BG∙ ⟩ ↪ (∥ ⟨ A∙ ⟩ ∥ 3)) where
+  (hyp-conBG : isConnected' ⟨ BG∙ ⟩) (Bi∙ : ⟨ BG∙ ⟩ B↪ (∥ ⟨ A∙ ⟩ ∥ 3)) where
 
   A = ⟨ A∙ ⟩
 
@@ -213,9 +216,6 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
 
   u : X → BG
   u = pullbackΣ-proj₁
-
-  pick : {W : Type} (a : W) → ⊤ → W
-  pick x tt = x
 
   F : A → Type
   F a = Pullback p (pick a)
@@ -234,7 +234,7 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
       fiber Bi ∣ a ∣ ∎
 
   isSet-fib-Bi : (a : A) → isSet (fiber Bi ∣ a ∣)
-  isSet-fib-Bi a = isProp→isSet (isEmbedding→hasPropFibers (Bi∙ .snd) ∣ a ∣)
+  isSet-fib-Bi a = Bi∙ .snd ∣ a ∣
 
   p-isCov₀ : isCovering₀ p
   p-isCov₀ a = subst isSet (sym (fib-p≡fib-Bi a)) (isSet-fib-Bi a)
@@ -280,8 +280,65 @@ module ConnectedCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = 
   A : Type
   A = ⟨ A∙ ⟩
 
-  Bi : ∥ X ∥ 3 → ∥ A ∥ 3
+  Bi : (∥ X ∥ 3) → (∥ A ∥ 3)
   Bi = ∥-∥ₕ-map p
 
-  Bi-embedding : isEmbedding Bi
-  Bi-embedding = hasPropFibers→isEmbedding {!!}
+  --- F --> X --> ∥ X ∥
+  --- | ⌟   |       |
+  --- v     v       v
+  --- 1 --> A --> ∥ A ∥
+
+  fib-trunc-lemma : (a : A) → fiber p a ≡ fiber Bi ∣ a ∣
+  fib-trunc-lemma a = isoToPath (iso to of s r) where
+
+    to : fiber p a → fiber Bi ∣ a ∣
+    to (x , q) = ∣ x ∣ , (transport⁻ (PathIdTrunc 2) ∣ q ∣)
+
+    of : fiber Bi ∣ a ∣ → fiber p a
+    of (x , q) = ∥-∥ₕ-elim {B = λ x → Bi x ≡ ∣ a ∣ → fiber p a} (λ _ → isSet→isGroupoid (isSetΠ (λ _ → fib-set a)))
+       (λ x → λ (q : ∣ p x ∣ ≡ ∣ a ∣) → ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) (transport (PathIdTrunc 2) q)) x q
+
+    s : section to of
+    s (x , q) = ΣPathTransport→PathΣ (to (of (x , q))) (x , q) (l₁ x q , l₂) where
+
+      arg₁ : (x : ∥ X ∥ 3) → Bi x ≡ ∣ a ∣ → ∥ X ∥ 3
+      arg₁ x q = ∣ ∥-∥ₕ-elim {B = λ x → Bi x ≡ ∣ a ∣ → fiber p a} (λ _ → isSet→isGroupoid (isSetΠ (λ _ → fib-set a)))
+       (λ x → λ (q : ∣ p x ∣ ≡ ∣ a ∣) → ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) (transport (PathIdTrunc 2) q)) x q .fst ∣
+
+      l₁' : (x : X) (q : ∥ p x ≡ a ∥ 2) → Path (∥ X ∥ 3) ∣ ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) q .fst ∣ ∣ x ∣
+      l₁' x = ∥-∥ₕ-elim {B = λ q → Path (∥ X ∥ 3) ∣ ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) q .fst ∣ ∣ x ∣}
+              (λ q → subst⁻ isSet (PathIdTrunc 2) (isOfHLevelTrunc 2)) λ _ → refl
+
+      l₁ : (x : ∥ X ∥ 3) (q : Bi x ≡ ∣ a ∣) → arg₁ x q ≡ x
+      l₁ x q = ∥-∥ₕ-elim {B = λ x → ∀ q → arg₁ x q ≡ x}
+        (λ x → isGroupoidΠ (λ q → isOfHLevelTruncPath {x = arg₁ x q} {y = x})) (λ x q → l₁' x (transport (PathIdTrunc 2) q)) x q
+
+      arg₂ : (x : ∥ X ∥ 3) → Bi x ≡ ∣ a ∣ → Bi x ≡ ∣ a ∣
+      arg₂ x q = subst (λ x → Bi x ≡ ∣ a ∣) (l₁ x q) (transport⁻ (PathIdTrunc 2) ∣ ∥-∥ₕ-elim {B = λ x → Bi x ≡ ∣ a ∣ → fiber p a}
+        (λ _ → isSet→isGroupoid (isSetΠ (λ _ → fib-set a))) (λ x → λ (q : ∣ p x ∣ ≡ ∣ a ∣) → ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) (transport (PathIdTrunc 2) q)) x q .snd ∣)
+
+      l₂' : (x : ∥ X ∥ 3) (q : Bi x ≡ ∣ a ∣) → isGroupoid (arg₂ x q ≡ q)
+      l₂' x q = isOfHLevelSuc 3 (isOfHLevelTruncPath {n = 3}) (arg₂ x q) q
+
+      l₂'' : (x : X) (q : ∥ p x ≡ a ∥ 2) → arg₂ ∣ x ∣ (transport⁻ (PathIdTrunc 2) q) ≡ (transport⁻ (PathIdTrunc 2) q)
+      l₂'' x = ∥-∥ₕ-elim {B = λ q → arg₂ ∣ x ∣ (transport⁻ (PathIdTrunc 2) q) ≡ (transport⁻ (PathIdTrunc 2) q)} (λ _ → isOfHLevelTruncPath {n = 3} _ _) (λ q →
+          subst (λ x → Bi x ≡ ∣ a ∣) (l₁ ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣)) (transport⁻ (PathIdTrunc 2) ∣ (
+            ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣)))
+            .snd ∣)
+        ≡⟨ cong (λ u → subst (λ x → Bi x ≡ ∣ a ∣) (l₁ ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣)) (transport⁻ (PathIdTrunc 2) ∣ (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) u) .snd ∣)) ? ⟩
+          subst (λ x → Bi x ≡ ∣ a ∣) (l₁ ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣)) (transport⁻ (PathIdTrunc 2) ∣ q ∣)
+        ≡⟨⟩
+          subst (λ x → Bi x ≡ ∣ a ∣) (l₁' x (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣))) (transport⁻ (PathIdTrunc 2) ∣ q ∣)
+        ≡⟨ {!!} ⟩
+          subst (λ x → Bi x ≡ ∣ a ∣) (l₁' x ∣ q ∣) (transport⁻ (PathIdTrunc 2) ∣ q ∣)
+        ≡⟨ transportRefl (transport⁻ (PathIdTrunc 2) ∣ q ∣) ⟩
+          transport⁻ (PathIdTrunc 2) ∣ q ∣ ∎
+        )
+
+      l₂ : arg₂ x q ≡ q
+      l₂ = ∥-∥ₕ-elim {B = λ x → (q : Bi x ≡ ∣ a ∣) → arg₂ x q ≡ q} (λ x → isGroupoidΠ (l₂' x)) (λ x q →
+           ∥-∥ₕ-elim {B = λ q → {!!}} {!!} {!!} (transport (PathIdTrunc 2) q)
+        ) x q
+
+    r : retract to of
+    r (x , q) = cong (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
