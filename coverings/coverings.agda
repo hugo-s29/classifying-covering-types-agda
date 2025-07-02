@@ -322,23 +322,35 @@ module ConnectedCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = 
 
       l₂'' : (x : X) (q : ∥ p x ≡ a ∥ 2) → arg₂ ∣ x ∣ (transport⁻ (PathIdTrunc 2) q) ≡ (transport⁻ (PathIdTrunc 2) q)
       l₂'' x = ∥-∥ₕ-elim {B = λ q → arg₂ ∣ x ∣ (transport⁻ (PathIdTrunc 2) q) ≡ (transport⁻ (PathIdTrunc 2) q)} (λ _ → isOfHLevelTruncPath {n = 3} _ _) (λ q →
-          subst (λ x → Bi x ≡ ∣ a ∣) (l₁ ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣)) (transport⁻ (PathIdTrunc 2) ∣ (
-            ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣)))
-            .snd ∣)
-        ≡⟨ cong (λ u → subst (λ x → Bi x ≡ ∣ a ∣) (l₁ ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣)) (transport⁻ (PathIdTrunc 2) ∣ (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) u) .snd ∣)) ? ⟩
-          subst (λ x → Bi x ≡ ∣ a ∣) (l₁ ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣)) (transport⁻ (PathIdTrunc 2) ∣ q ∣)
+          subst (λ x → Bi x ≡ ∣ a ∣) (l₁ ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣)) (transport⁻ (PathIdTrunc 2) (
+            ∣
+                (∥-∥ₕ-elim
+                {B = λ x → Bi x ≡ ∣ a ∣ → fiber p a}
+                (λ _ → isSet→isGroupoid (isSetΠ (λ _ → fib-set a)))
+                (λ x q →
+                   ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q)
+                   (transport (PathIdTrunc 2) q))
+                ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣) .snd)
+             ∣
+            ))
         ≡⟨⟩
-          subst (λ x → Bi x ≡ ∣ a ∣) (l₁' x (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣))) (transport⁻ (PathIdTrunc 2) ∣ q ∣)
-        ≡⟨ {!!} ⟩
+          subst (λ x → Bi x ≡ ∣ a ∣) (l₁' x (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣))) (transport⁻ (PathIdTrunc 2) (
+            ∣ ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣)) .snd ∣))
+        ≡⟨ cong (λ u → subst (λ x → Bi x ≡ ∣ a ∣) (l₁' x u) (transport⁻ (PathIdTrunc 2) (∣ ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) u .snd ∣))) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣) ⟩
           subst (λ x → Bi x ≡ ∣ a ∣) (l₁' x ∣ q ∣) (transport⁻ (PathIdTrunc 2) ∣ q ∣)
+        ≡⟨⟩
+          subst {x = ∣ x ∣} (λ x → Bi x ≡ ∣ a ∣) refl (transport⁻ (PathIdTrunc 2) ∣ q ∣)
         ≡⟨ transportRefl (transport⁻ (PathIdTrunc 2) ∣ q ∣) ⟩
           transport⁻ (PathIdTrunc 2) ∣ q ∣ ∎
         )
 
       l₂ : arg₂ x q ≡ q
       l₂ = ∥-∥ₕ-elim {B = λ x → (q : Bi x ≡ ∣ a ∣) → arg₂ x q ≡ q} (λ x → isGroupoidΠ (l₂' x)) (λ x q →
-           ∥-∥ₕ-elim {B = λ q → {!!}} {!!} {!!} (transport (PathIdTrunc 2) q)
+          subst (λ q → arg₂ ∣ x ∣ q ≡ q) (transport⁻Transport (PathIdTrunc 2) q) (l₂'' x (transport (PathIdTrunc 2) q))
         ) x q
 
     r : retract to of
     r (x , q) = cong (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
+
+  Bi∙ : (∥ X ∥ 3) B↪ (∥ A ∥ 3)
+  Bi∙ = Bi , ∥-∥ₕ-elim (λ _ → isSet→isGroupoid (isProp→isSet isPropIsSet)) (λ a → subst isSet (fib-trunc-lemma a) (fib-set a))
