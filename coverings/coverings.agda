@@ -177,11 +177,16 @@ isConnected'Σ {A} {B} (⋆A , hA) hB = basept , path where
   path : (x y : Σ A B) → ∥ x ≡ y ∥₁
   path (a , b) (a' , b') = transport (propTruncIdempotent isPropPropTrunc) (path' a a' b b')
 
-module UniversalCovering (A∙ : Pointed ℓ-zero) ((_ , conA) : isConnected' ⟨ A∙ ⟩) where
+module UniversalCovering (A∙ : Pointed ℓ-zero) (_ : isConnected' ⟨ A∙ ⟩) where
   A = ⟨ A∙ ⟩
   ⋆A = pt A∙
 
   Ã = Σ A (λ a → ∥ ⋆A ≡ a ∥ 2)
+
+  1-connected : isConnected 3 Ã
+  1-connected = ∣ ⋆A , ∣ refl ∣ ∣ , ∥-∥ₕ-elim {B = λ y → ∣ ⋆A , ∣ refl ∣ ∣ ≡ y} (λ y → isOfHLevelTruncPath {y = y})
+    (λ (a , p) → transport⁻ (PathIdTrunc 2) (∥-∥ₕ-elim {B = λ p → ∥ (⋆A , ∣ refl ∣) ≡ (a , p) ∥ 2} (λ _ → isOfHLevelTrunc 2)
+      (J (λ a p → ∥ (⋆A , ∣ refl ∣) ≡ (a , ∣ p ∣) ∥ 2) ∣ refl ∣) p))
 
   connected : isConnected' Ã
   connected = ∣ (⋆A , ∣ refl ∣) ∣₁ , lemma₂ where
@@ -195,11 +200,20 @@ module UniversalCovering (A∙ : Pointed ℓ-zero) ((_ , conA) : isConnected' �
     lemma₂ : (x y : Ã) → ∥ x ≡ y ∥₁
     lemma₂ (a , p) = ∥-∥ₕ-elim {B = λ p → (y : Ã) → ∥ (a , p) ≡ y ∥₁} (λ _ → isProp→isSet (isPropΠ (λ _ → isPropPropTrunc))) (lemma₁ a) p
 
-_B↪_ : (X Y : Type) → Type
-X B↪ Y = Σ (X → Y) (λ f → (y : Y) → isSet (fiber f y))
+_B↪∙_ : (X Y : Pointed ℓ-zero) → Type
+X B↪∙ Y = Σ (⟨ X ⟩ → ⟨ Y ⟩) (λ f → ((y : ⟨ Y ⟩) → isSet (fiber f y)) × (f (pt X) ≡ pt Y))
 
-module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' ⟨ A∙ ⟩ )
-  (hyp-conBG : isConnected' ⟨ BG∙ ⟩) (Bi∙ : ⟨ BG∙ ⟩ B↪ (∥ ⟨ A∙ ⟩ ∥ 3)) where
+∥_∥∙_ : Pointed ℓ-zero → ℕ → Pointed ℓ-zero
+∥ (A , a) ∥∙ n = ∥ A ∥ n , ∣ a ∣ₕ
+
+SubGroupπ₁ : (A : Pointed ℓ-zero) → Type₁
+SubGroupπ₁ A∙ = Σ (Pointed ℓ-zero) (λ BG∙ → (BG∙ B↪∙ (∥ A∙ ∥∙ 3)) × isConnected' ⟨ BG∙ ⟩ × isGroupoid ⟨ BG∙ ⟩)
+
+PCCovering₀ : (A : Pointed ℓ-zero) → Type₁
+PCCovering₀ A = Σ (Covering₀ ⟨ A ⟩) λ C → ((Σ (C .Covering₀.B) λ c → C .Covering₀.f c ≡ pt A) × isConnected' (C .Covering₀.B))
+
+module Subgroup→PCCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' ⟨ A∙ ⟩ )
+  (hyp-conBG : isConnected' ⟨ BG∙ ⟩) (Bi∙ : BG∙ B↪∙ (∥ A∙ ∥∙ 3)) where
 
   A = ⟨ A∙ ⟩
 
@@ -234,7 +248,7 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
       fiber Bi ∣ a ∣ ∎
 
   isSet-fib-Bi : (a : A) → isSet (fiber Bi ∣ a ∣)
-  isSet-fib-Bi a = Bi∙ .snd ∣ a ∣
+  isSet-fib-Bi a = Bi∙ .snd .fst ∣ a ∣
 
   p-isCov₀ : isCovering₀ p
   p-isCov₀ a = subst isSet (sym (fib-p≡fib-Bi a)) (isSet-fib-Bi a)
@@ -256,11 +270,8 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
     ≡⟨ Pullback-fiber₁ (pick x) u ⟩
       fiber u x ∎
 
-  isConnected'Ã : (x : ∥ A ∥ 3) → isConnected' (Ã x)
-  isConnected'Ã = ∥-∥ₕ-elim (λ x → isSet→isGroupoid (isProp→isSet isConnected'IsProp)) λ a → isConnected'Ã∣a∣ a where
-
-    isConnected'Ã∣a∣ : (a : A) → isConnected' (Ã ∣ a ∣)
-    isConnected'Ã∣a∣ a = subst isConnected' (
+  Ã-paths≡Ã-pullback : (a : A) → UniversalCovering.Ã (A , a) hyp-conA ≡ Pullback (pick ∣ a ∣) ∣_∣
+  Ã-paths≡Ã-pullback a =
         Σ A (λ a' → ∥ a ≡ a' ∥ 2)
       ≡⟨ Σ-cong-snd (λ x → sym (PathIdTrunc 2)) ⟩
         Σ A (λ a' → ∣ a ∣ ≡ ∣ a' ∣)
@@ -268,7 +279,12 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
         fiber ∣_∣ ∣ a ∣
       ≡⟨ Pullback-fiber₁ (pick ∣ a ∣) ∣_∣ ⁻¹ ⟩
         Pullback {A = ⊤} (pick ∣ a ∣) ∣_∣  ∎
-      ) (UniversalCovering.connected (A , a) hyp-conA)
+
+  isConnected'Ã : (x : ∥ A ∥ 3) → isConnected' (Ã x)
+  isConnected'Ã = ∥-∥ₕ-elim (λ x → isSet→isGroupoid (isProp→isSet isConnected'IsProp)) λ a → isConnected'Ã∣a∣ a where
+
+    isConnected'Ã∣a∣ : (a : A) → isConnected' (Ã ∣ a ∣)
+    isConnected'Ã∣a∣ a = subst isConnected' (Ã-paths≡Ã-pullback a) (UniversalCovering.connected (A , a) hyp-conA)
 
   isConnected'-fibu : (x : BG) → isConnected' (fiber u x)
   isConnected'-fibu x = subst isConnected' (Ã≡fibu x) (isConnected'Ã (Bi x))
@@ -276,7 +292,10 @@ module Subgroup→ConnectedCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA
   connected : isConnected' X
   connected = subst isConnected' (sym X≡Σfibu) (isConnected'Σ hyp-conBG isConnected'-fibu)
 
-module ConnectedCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = X ; f = p ; p = fib-set }) : Covering₀ ⟨ A∙ ⟩) where
+  connectedCovering₀ : PCCovering₀ A∙
+  connectedCovering₀ = subgroup→covering₀ , ((pt BG∙ , pt A∙ , Bi∙ .snd .snd) , refl) , connected
+
+module PCCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = X ; f = p ; p = fib-set } , (x , p⋆) , hypCon) : PCCovering₀ A∙) where
   A : Type
   A = ⟨ A∙ ⟩
 
@@ -352,5 +371,144 @@ module ConnectedCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = 
     r : retract to of
     r (x , q) = cong (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
 
-  Bi∙ : (∥ X ∥ 3) B↪ (∥ A ∥ 3)
-  Bi∙ = Bi , ∥-∥ₕ-elim (λ _ → isSet→isGroupoid (isProp→isSet isPropIsSet)) (λ a → subst isSet (fib-trunc-lemma a) (fib-set a))
+  Bi∙ : (∥ (X , x) ∥∙ 3) B↪∙ (∥ A∙ ∥∙ 3)
+  Bi∙ = Bi ,  ∥-∥ₕ-elim (λ _ → isSet→isGroupoid (isProp→isSet isPropIsSet)) (λ a → subst isSet (fib-trunc-lemma a) (fib-set a)) , cong ∣_∣ p⋆
+
+  connected : isConnected' (∥ X ∥ 3)
+  connected = ∣ ∣ x ∣ ∣₁ , ∥-∥ₕ-elim2 (λ _ _ → isSet→isGroupoid (isProp→isSet isPropPropTrunc)) λ a b → ∥-∥-elim (λ _ → isPropPropTrunc) (∣_∣₁ ∘ cong ∣_∣) (hypCon .snd a b)
+
+  subgroup : SubGroupπ₁ A∙
+  subgroup = ((∥ X ∥ 3) , ∣ x ∣) , Bi∙ , connected , isOfHLevelTrunc 3
+
+module _ (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) where
+  SubGroupπ₁→PCCovering₀ : SubGroupπ₁ A → PCCovering₀ A
+  SubGroupπ₁→PCCovering₀ (BG , Bi , conBG , grpBG) = Subgroup→PCCovering₀.connectedCovering₀ A BG conA conBG Bi
+
+  SubGroupπ₁←PCCovering₀ : PCCovering₀ A → SubGroupπ₁ A
+  SubGroupπ₁←PCCovering₀ = PCCovering₀→Subgroup.subgroup A
+
+is-1-connected-iso : {A B : Type} (f : A → B) → isConnectedFun 3 f → (∥ A ∥ 3) ≅ (∥ B ∥ 3)
+is-1-connected-iso f h ._≅_.fun = ∥-∥ₕ-map f
+is-1-connected-iso f h ._≅_.inv = ∥-∥ₕ-elim (λ _ → isOfHLevelTrunc 3) λ b → ∥-∥ₕ-map fst (h b .fst)
+is-1-connected-iso {B = B} f h ._≅_.rightInv = ∥-∥ₕ-elim (λ x → isOfHLevelTruncPath {y = x}) lemma where
+  lemma : (b : B) → ∥-∥ₕ-map f (∥-∥ₕ-map fst (h b .fst)) ≡ ∣ b ∣
+  lemma b = ∥-∥ₕ-elim (λ x → isOfHLevelTruncPath {x = ∥-∥ₕ-map f (∥-∥ₕ-map fst x)}) (λ (_ , p) → cong ∣_∣ p) (h b .fst)
+is-1-connected-iso {A = A} f h ._≅_.leftInv = ∥-∥ₕ-elim (λ x → isOfHLevelTruncPath {y = x}) lemma where
+  lemma : (a : A) → ∥-∥ₕ-map fst (h (f a) .fst) ≡ ∣ a ∣
+  lemma a = cong (∥-∥ₕ-map fst) (h (f a) .snd ∣ a , refl ∣)
+
+is-1-connected-equiv : {A B : Type} (f : A → B) → isConnectedFun 3 f → (∥ A ∥ 3) ≃ (∥ B ∥ 3)
+is-1-connected-equiv f h = isoToEquiv (is-1-connected-iso f h)
+
+transport-fun : ∀ {ℓ ℓ'} {A B : Type ℓ} {C : Type ℓ'} (p : A ≡ B) (f : A → C) (g : B → C) → (∀ x → f x ≡ g (transport p x)) → subst (λ A' → A' → C) p f ≡ g
+transport-fun {B = B} {C = C} p f =
+  J (λ B p → (g : B → C) → (∀ x → f x ≡ g (transport p x)) → subst (λ X → X → C) p f ≡ g )
+  (λ g h → transportRefl f ∙ funExt (λ x → (h x) ∙ (cong g (transportRefl x)))) p
+
+transport-fun⁻ : ∀ {ℓ ℓ'} {A B : Type ℓ} {C : Type ℓ'} (p : A ≡ B) (f : A → C) (g : B → C) → subst (λ A' → A' → C) p f ≡ g → ∀ x → f x ≡ g (transport p x)
+transport-fun⁻ {B = B} {C = C} p f =
+  J (λ B p → (g : B → C) → subst (λ X → X → C) p f ≡ g → ∀ x → f x ≡ g (transport p x))
+  (λ g u x → funExt⁻ (substRefl {B = λ X → X → C} f ⁻¹ ∙ u) x ∙ cong g (transportRefl x ⁻¹)) p
+
+
+module LeftInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((BG , Bi , conBG , grpBG) : SubGroupπ₁ A) where
+
+  is-1-connected-Ã : (x : ∥ ⟨ A ⟩ ∥ 3) → isConnected 3 (Subgroup→PCCovering₀.Ã A BG conA conBG Bi x)
+  is-1-connected-Ã = ∥-∥ₕ-elim (λ _ → isSet→isGroupoid (isProp→isSet isPropIsContr)) is-1-connected-Ã∣a∣ where
+
+    is-1-connected-Ã∣a∣ : (a : ⟨ A ⟩) → isConnected 3 (Subgroup→PCCovering₀.Ã A BG conA conBG Bi ∣ a ∣)
+    is-1-connected-Ã∣a∣ a = subst (isConnected 3) (Subgroup→PCCovering₀.Ã-paths≡Ã-pullback A BG conA conBG Bi a) (UniversalCovering.1-connected (⟨ A ⟩ , a) conA)
+
+  u-1-connected : isConnectedFun 3 (fst {A = ⟨ BG ⟩} {B = λ g → Σ ⟨ A ⟩ λ a → Bi .fst g ≡ ∣ a ∣})
+  u-1-connected g = subst (isConnected 3) (Subgroup→PCCovering₀.Ã≡fibu A BG conA conBG Bi g) (is-1-connected-Ã (Bi .fst g))
+
+  lemma₁ : ∥ pullbackΣ (fst Bi) ∣_∣ , pt BG , pt A , Bi .snd .snd ∥∙ 3 ≡ BG
+  lemma₁ = ΣPathTransport→PathΣ _ _ (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG , (
+      transport (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG) ∣ pt BG , pt A , Bi .snd .snd ∣
+    ≡⟨ transportComposite (isoToPath (is-1-connected-iso fst u-1-connected)) (truncIdempotent 3 grpBG) ∣ pt BG , pt A , Bi .snd .snd ∣ ⟩
+      transport (truncIdempotent 3 grpBG) (transport (isoToPath (is-1-connected-iso fst u-1-connected)) ∣ pt BG , pt A , Bi .snd .snd ∣)
+    ≡⟨ cong (transport (truncIdempotent 3 grpBG)) (transportIsoToPath (is-1-connected-iso fst u-1-connected) ∣ pt BG , pt A , Bi .snd .snd ∣) ⟩
+      transport (truncIdempotent 3 grpBG) ∣ snd BG ∣
+    ≡⟨ transportIsoToPath (truncIdempotentIso 3 grpBG) ∣ snd BG ∣ ⟩
+      snd BG ∎
+    ))
+
+  roundtrip : SubGroupπ₁ A
+  roundtrip = SubGroupπ₁←PCCovering₀ A conA (SubGroupπ₁→PCCovering₀ A conA (BG , Bi , conBG , grpBG))
+
+  subst-fst : ∀ {ℓ} → {A : Type ℓ} (f : A → Type) (g : (x : A) → f x → Type) (x y : A) (p : x ≡ y) (u : Σ (f x) (g x)) → fst (subst (λ x → Σ (f x) (g x)) p u) ≡ subst f p (fst u)
+  subst-fst f g x _ = J (λ y p → (u : Σ (f x) (g x)) → fst (subst (λ x → Σ (f x) (g x)) p u) ≡ subst f p (fst u)) λ u → cong fst (substRefl {B = (λ x → Σ (f x) (g x))} u) ∙ substRefl {B = f} (fst u) ⁻¹
+
+  {-
+  subst-snd : ∀ {ℓ} → {A : Type ℓ} (f : A → Type) (g : (x : A) → f x → Type) (x y : A) (p : x ≡ y) (u : Σ (f x) (g x)) → snd (subst (λ x → Σ (f x) (g x)) p u) ≡ subst (λ x → g x (fst u)) p (snd u)
+  subst-snd f g x _ = J (λ y p → (u : Σ (f x) (g x)) → snd (subst (λ x → Σ (f x) (g x)) p u) ≡ subst g p (snd u)) λ u → cong snd (substRefl {B = (λ x → Σ (f x) (g x))} u) ∙ substRefl {B = g} (snd u) ⁻¹
+  -}
+
+  lemma₂ : subst (λ BG → (BG B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG ⟩ × isGroupoid ⟨ BG ⟩) lemma₁ (roundtrip .snd) ≡ (Bi , conBG , grpBG)
+  lemma₂ = ΣPathP (lemma₂-a' , ΣPathP ({!!} , {!!})) where
+
+    ∥p∥ : ∥ pullbackΣ (fst Bi) ∣_∣ ∥ 3 → ∥ ⟨ A ⟩ ∥ 3
+    ∥p∥ = ∥-∥ₕ-map λ x → x .snd .fst
+
+    lemma₂-a : fst (fst (subst (λ BG → (BG B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG ⟩ × isGroupoid ⟨ BG ⟩) lemma₁ (roundtrip .snd))) ≡ fst Bi
+    lemma₂-a = transport-fun (cong ⟨_⟩ lemma₁) (roundtrip .snd .fst .fst) (Bi .fst) λ x → core-lemma₂-a x ⁻¹ where
+
+      core-lemma₂-a : (x : ∥ pullbackΣ (fst Bi) ∣_∣ ∥ 3) → Bi .fst (transport (cong fst lemma₁) x) ≡ ∥p∥ x
+      core-lemma₂-a = ∥-∥ₕ-elim (λ x → isOfHLevelTruncPath {y = ∥p∥ x}) λ x →
+          Bi .fst (transport (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG) ∣ x ∣)
+        ≡⟨ cong (Bi .fst) (transportComposite (isoToPath (is-1-connected-iso fst u-1-connected)) (truncIdempotent 3 grpBG) ∣ x ∣) ⟩
+          Bi .fst (transport (truncIdempotent 3 grpBG) (transport (isoToPath (is-1-connected-iso fst u-1-connected)) ∣ x ∣))
+        ≡⟨ cong (λ a → Bi .fst (transport (truncIdempotent 3 grpBG) a)) (transportIsoToPath (is-1-connected-iso fst u-1-connected) ∣ x ∣) ⟩
+          Bi .fst (transport (truncIdempotent 3 grpBG) ∣ fst x ∣)
+        ≡⟨ cong (Bi .fst) (transportIsoToPath (truncIdempotentIso 3 grpBG) ∣ fst x ∣) ⟩
+          Bi .fst (fst x)
+        ≡⟨ x .snd .snd ⟩
+          ∣ x .snd .fst ∣ ∎
+
+    lemma₂-a'' : fst (subst (λ f → ((y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) × (f (pt BG) ≡ pt (∥ A ∥∙ 3))) lemma₂-a (snd (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd))))) ≡ fst (snd Bi)
+    lemma₂-a'' =
+        fst (subst (λ f → ((y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) × (f (pt BG) ≡ pt (∥ A ∥∙ 3))) lemma₂-a (snd (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd)))))
+      ≡⟨ cong (λ u → fst (subst (λ f → ((y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) × (f (pt BG) ≡ pt (∥ A ∥∙ 3))) lemma₂-a u)) lemma₂-a''₃ ⟩
+        fst (subst (λ f → ((y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) × (f (pt BG) ≡ pt (∥ A ∥∙ 3))) lemma₂-a (lemma₂-a''₁ , lemma₂-a''₂))
+      ≡⟨ subst-fst (λ f → (y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) (λ f _ → f (pt BG) ≡ pt (∥ A ∥∙ 3)) _ (fst Bi) lemma₂-a (lemma₂-a''₁ , lemma₂-a''₂) ⟩
+        subst (λ f → (y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) lemma₂-a lemma₂-a''₁
+      ≡⟨ {!!} ⟩
+        fst (snd Bi) ∎ where
+
+      lemma₂-a''₁ : (y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber (fst (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd)))) y)
+      lemma₂-a''₁ y = subst isSet (
+          fiber (fst Bi) y
+        ≡⟨ cong (λ f → fiber f y) (lemma₂-a ⁻¹) ⟩
+          fiber (fst (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd)))) y ∎
+        ) (Bi .snd .fst y)
+
+      lemma₂-a''₂ : fst (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd))) (pt BG) ≡ pt (∥ A ∥∙ 3)
+      lemma₂-a''₂ =
+          fst (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd))) (pt BG)
+        ≡⟨ funExt⁻ lemma₂-a (pt BG) ⟩
+          fst Bi (pt BG)
+        ≡⟨ Bi .snd .snd ⟩
+          pt (∥ A ∥∙ 3) ∎
+
+
+      lemma₂-a''₃ : snd (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd))) ≡ (lemma₂-a''₁ , lemma₂-a''₂)
+      lemma₂-a''₃ = {!!}
+
+
+    lemma₂-a' : fst (subst (λ BG → (BG B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG ⟩ × isGroupoid ⟨ BG ⟩) lemma₁ (roundtrip .snd)) ≡ Bi
+    lemma₂-a' = ΣPathP (lemma₂-a , toPathP (ΣPathP (lemma₂-a'' , {!!})))
+
+  leftinv : roundtrip ≡ (BG , Bi , conBG , grpBG)
+  leftinv = ΣPathP (lemma₁ , ΣPathP ({!!} , {!!}))
+
+
+module GaloisCorrespondance (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) where
+
+  galois-correspondance≅ : SubGroupπ₁ A ≅ PCCovering₀ A
+  galois-correspondance≅ ._≅_.fun = SubGroupπ₁→PCCovering₀ A conA
+  galois-correspondance≅ ._≅_.inv = SubGroupπ₁←PCCovering₀ A conA
+  galois-correspondance≅ ._≅_.rightInv x = {!!}
+  galois-correspondance≅ ._≅_.leftInv = {!!}
+
+  galois-correspondance : SubGroupπ₁ A ≃ PCCovering₀ A
+  galois-correspondance = isoToEquiv galois-correspondance≅
