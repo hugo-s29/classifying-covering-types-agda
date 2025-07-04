@@ -416,9 +416,11 @@ transport-fun⁻ {B = B} {C = C} p f =
   J (λ B p → (g : B → C) → subst (λ X → X → C) p f ≡ g → ∀ x → f x ≡ g (transport p x))
   (λ g u x → funExt⁻ (substRefl {B = λ X → X → C} f ⁻¹ ∙ u) x ∙ cong g (transportRefl x ⁻¹)) p
 
--- No idea how to prove this, but it seems true
 transport-Σ : ∀ {A : Type} {B C : A → Type} (x : Σ A B) (p : (a : A) → B a ≡ C a) → transport (λ i → Σ A (λ a → p a i)) x ≡ (fst x , transport (p (fst x)) (snd x))
-transport-Σ (a , b) p = {!!}
+transport-Σ {A = A} x@(a , b) p = fromPathP lem
+  where
+  lem : PathP (λ i → Σ A (λ a → p a i)) x (fst x , transport (p (fst x)) (snd x))
+  lem = ΣPathP (refl , (transport-filler (p a) b))
 
 module LeftInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib) : SubGroupπ₁' A) where
 
