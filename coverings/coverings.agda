@@ -15,7 +15,6 @@ open import Cubical.Foundations.Univalence
 open import Cubical.Functions.Fibration
 open import Cubical.Functions.Embedding
 open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥-∥ₕ-map ; elim to ∥-∥ₕ-elim ; map2 to ∥-∥ₕ-map2 ; elim2 to ∥-∥ₕ-elim2)
-open import Cubical.HITs.SetTruncation renaming (rec to ∥-∥₂-rec ; map to ∥-∥₂-map ; elim to ∥-∥₂-elim)
 open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; map2 to ∥-∥-map2 ; elim to ∥-∥-elim ; elim2 to ∥-∥-elim2 ; elim3 to ∥-∥-elim3)
 open import Cubical.Homotopy.Connected
 open import Cubical.WildCat.Base
@@ -209,8 +208,15 @@ X B↪∙ Y = Σ (⟨ X ⟩ → ⟨ Y ⟩) (λ f → ((y : ⟨ Y ⟩) → isSet 
 SubGroupπ₁ : (A : Pointed ℓ-zero) → Type₁
 SubGroupπ₁ A∙ = Σ (Pointed ℓ-zero) (λ BG∙ → (BG∙ B↪∙ (∥ A∙ ∥∙ 3)) × isConnected' ⟨ BG∙ ⟩ × isGroupoid ⟨ BG∙ ⟩)
 
+-- Useful when doing the "equivalence" proof
+SubGroupπ₁' : Pointed ℓ-zero → Type₁
+SubGroupπ₁' A = Σ (Σ (Pointed ℓ-zero) (λ X → ⟨ X ⟩ → ⟨ ∥ A ∥∙ 3 ⟩)) (λ (X , f) → (f (pt X) ≡ ∣ pt A ∣) × isConnected' ⟨ X ⟩ × isGroupoid ⟨ X ⟩ × ((a : ⟨ ∥ A ∥∙ 3 ⟩) → isSet(fiber f a)))
+
 PCCovering₀ : (A : Pointed ℓ-zero) → Type₁
 PCCovering₀ A = Σ (Covering₀ ⟨ A ⟩) λ C → ((Σ (C .Covering₀.B) λ c → C .Covering₀.f c ≡ pt A) × isConnected' (C .Covering₀.B))
+
+PCCovering₀' : (A : Pointed ℓ-zero) → Type₁
+PCCovering₀' A = Σ (Σ (Pointed ℓ-zero) (λ X → (⟨ X ⟩ → ⟨ A ⟩))) λ (X , f) → (f (pt X) ≡ pt A) × (isConnected' ⟨ X ⟩) × ((a : ⟨ A ⟩) → isSet (fiber f a))
 
 module Subgroup→PCCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' ⟨ A∙ ⟩ )
   (hyp-conBG : isConnected' ⟨ BG∙ ⟩) (Bi∙ : BG∙ B↪∙ (∥ A∙ ∥∙ 3)) where
@@ -292,10 +298,10 @@ module Subgroup→PCCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isCo
   connected : isConnected' X
   connected = subst isConnected' (sym X≡Σfibu) (isConnected'Σ hyp-conBG isConnected'-fibu)
 
-  connectedCovering₀ : PCCovering₀ A∙
-  connectedCovering₀ = subgroup→covering₀ , ((pt BG∙ , pt A∙ , Bi∙ .snd .snd) , refl) , connected
+  connectedCovering₀ : PCCovering₀' A∙
+  connectedCovering₀ = ((X , (pt BG∙ , pt A∙ , Bi∙ .snd .snd)) , p) , refl , connected , p-isCov₀
 
-module PCCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = X ; f = p ; p = fib-set } , (x , p⋆) , hypCon) : PCCovering₀ A∙) where
+module PCCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A∙) where
   A : Type
   A = ⟨ A∙ ⟩
 
@@ -377,15 +383,15 @@ module PCCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((record { B = X ; f =
   connected : isConnected' (∥ X ∥ 3)
   connected = ∣ ∣ x ∣ ∣₁ , ∥-∥ₕ-elim2 (λ _ _ → isSet→isGroupoid (isProp→isSet isPropPropTrunc)) λ a b → ∥-∥-elim (λ _ → isPropPropTrunc) (∣_∣₁ ∘ cong ∣_∣) (hypCon .snd a b)
 
-  subgroup : SubGroupπ₁ A∙
-  subgroup = ((∥ X ∥ 3) , ∣ x ∣) , Bi∙ , connected , isOfHLevelTrunc 3
+  subgroup : SubGroupπ₁' A∙
+  subgroup = (((∥ X ∥ 3) , ∣ x ∣) , Bi∙ .fst) , Bi∙ .snd .snd , connected , isOfHLevelTrunc 3 , Bi∙ .snd .fst
 
 module _ (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) where
-  SubGroupπ₁→PCCovering₀ : SubGroupπ₁ A → PCCovering₀ A
-  SubGroupπ₁→PCCovering₀ (BG , Bi , conBG , grpBG) = Subgroup→PCCovering₀.connectedCovering₀ A BG conA conBG Bi
+  SubGroupπ₁'→PCCovering₀' : SubGroupπ₁' A → PCCovering₀' A
+  SubGroupπ₁'→PCCovering₀' ((X , Bi) , Bi-⋆ , conX , _ , Bi-set) = Subgroup→PCCovering₀.connectedCovering₀ A X conA conX (Bi , Bi-set , Bi-⋆)
 
-  SubGroupπ₁←PCCovering₀ : PCCovering₀ A → SubGroupπ₁ A
-  SubGroupπ₁←PCCovering₀ = PCCovering₀→Subgroup.subgroup A
+  SubGroupπ₁'←PCCovering₀' : PCCovering₀' A → SubGroupπ₁' A
+  SubGroupπ₁'←PCCovering₀' = PCCovering₀→Subgroup.subgroup A
 
 is-1-connected-iso : {A B : Type} (f : A → B) → isConnectedFun 3 f → (∥ A ∥ 3) ≅ (∥ B ∥ 3)
 is-1-connected-iso f h ._≅_.fun = ∥-∥ₕ-map f
@@ -410,105 +416,209 @@ transport-fun⁻ {B = B} {C = C} p f =
   J (λ B p → (g : B → C) → subst (λ X → X → C) p f ≡ g → ∀ x → f x ≡ g (transport p x))
   (λ g u x → funExt⁻ (substRefl {B = λ X → X → C} f ⁻¹ ∙ u) x ∙ cong g (transportRefl x ⁻¹)) p
 
+-- No idea how to prove this, but it seems true
+transport-Σ : ∀ {A : Type} {B C : A → Type} (x : Σ A B) (p : (a : A) → B a ≡ C a) → transport (λ i → Σ A (λ a → p a i)) x ≡ (fst x , transport (p (fst x)) (snd x))
+transport-Σ (a , b) p = {!!}
 
-module LeftInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((BG , Bi , conBG , grpBG) : SubGroupπ₁ A) where
+module LeftInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib) : SubGroupπ₁' A) where
 
-  is-1-connected-Ã : (x : ∥ ⟨ A ⟩ ∥ 3) → isConnected 3 (Subgroup→PCCovering₀.Ã A BG conA conBG Bi x)
+  Bi∙ : BG B↪∙ (∥ A ∥∙ 3)
+  Bi∙ = Bi , Bi-fib , Bi-⋆
+
+  is-1-connected-Ã : (x : ∥ ⟨ A ⟩ ∥ 3) → isConnected 3 (Subgroup→PCCovering₀.Ã A BG conA conBG Bi∙ x)
   is-1-connected-Ã = ∥-∥ₕ-elim (λ _ → isSet→isGroupoid (isProp→isSet isPropIsContr)) is-1-connected-Ã∣a∣ where
 
-    is-1-connected-Ã∣a∣ : (a : ⟨ A ⟩) → isConnected 3 (Subgroup→PCCovering₀.Ã A BG conA conBG Bi ∣ a ∣)
-    is-1-connected-Ã∣a∣ a = subst (isConnected 3) (Subgroup→PCCovering₀.Ã-paths≡Ã-pullback A BG conA conBG Bi a) (UniversalCovering.1-connected (⟨ A ⟩ , a) conA)
+    is-1-connected-Ã∣a∣ : (a : ⟨ A ⟩) → isConnected 3 (Subgroup→PCCovering₀.Ã A BG conA conBG Bi∙ ∣ a ∣)
+    is-1-connected-Ã∣a∣ a = subst (isConnected 3) (Subgroup→PCCovering₀.Ã-paths≡Ã-pullback A BG conA conBG Bi∙ a) (UniversalCovering.1-connected (⟨ A ⟩ , a) conA)
 
-  u-1-connected : isConnectedFun 3 (fst {A = ⟨ BG ⟩} {B = λ g → Σ ⟨ A ⟩ λ a → Bi .fst g ≡ ∣ a ∣})
-  u-1-connected g = subst (isConnected 3) (Subgroup→PCCovering₀.Ã≡fibu A BG conA conBG Bi g) (is-1-connected-Ã (Bi .fst g))
+  u-1-connected : isConnectedFun 3 (fst {A = ⟨ BG ⟩} {B = λ g → Σ ⟨ A ⟩ λ a → Bi g ≡ ∣ a ∣})
+  u-1-connected g = subst (isConnected 3) (Subgroup→PCCovering₀.Ã≡fibu A BG conA conBG Bi∙ g) (is-1-connected-Ã (Bi g))
 
-  lemma₁ : ∥ pullbackΣ (fst Bi) ∣_∣ , pt BG , pt A , Bi .snd .snd ∥∙ 3 ≡ BG
+  lemma₁ : ∥ pullbackΣ Bi ∣_∣ , pt BG , pt A , Bi-⋆ ∥∙ 3 ≡ BG
   lemma₁ = ΣPathTransport→PathΣ _ _ (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG , (
-      transport (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG) ∣ pt BG , pt A , Bi .snd .snd ∣
-    ≡⟨ transportComposite (isoToPath (is-1-connected-iso fst u-1-connected)) (truncIdempotent 3 grpBG) ∣ pt BG , pt A , Bi .snd .snd ∣ ⟩
-      transport (truncIdempotent 3 grpBG) (transport (isoToPath (is-1-connected-iso fst u-1-connected)) ∣ pt BG , pt A , Bi .snd .snd ∣)
-    ≡⟨ cong (transport (truncIdempotent 3 grpBG)) (transportIsoToPath (is-1-connected-iso fst u-1-connected) ∣ pt BG , pt A , Bi .snd .snd ∣) ⟩
+      transport (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG) ∣ pt BG , pt A , Bi-⋆ ∣
+    ≡⟨ transportComposite (isoToPath (is-1-connected-iso fst u-1-connected)) (truncIdempotent 3 grpBG) ∣ pt BG , pt A , Bi-⋆ ∣ ⟩
+      transport (truncIdempotent 3 grpBG) (transport (isoToPath (is-1-connected-iso fst u-1-connected)) ∣ pt BG , pt A , Bi-⋆ ∣)
+    ≡⟨ cong (transport (truncIdempotent 3 grpBG)) (transportIsoToPath (is-1-connected-iso fst u-1-connected) ∣ pt BG , pt A , Bi-⋆ ∣) ⟩
       transport (truncIdempotent 3 grpBG) ∣ snd BG ∣
     ≡⟨ transportIsoToPath (truncIdempotentIso 3 grpBG) ∣ snd BG ∣ ⟩
       snd BG ∎
     ))
 
-  roundtrip : SubGroupπ₁ A
-  roundtrip = SubGroupπ₁←PCCovering₀ A conA (SubGroupπ₁→PCCovering₀ A conA (BG , Bi , conBG , grpBG))
 
-  subst-fst : ∀ {ℓ} → {A : Type ℓ} (f : A → Type) (g : (x : A) → f x → Type) (x y : A) (p : x ≡ y) (u : Σ (f x) (g x)) → fst (subst (λ x → Σ (f x) (g x)) p u) ≡ subst f p (fst u)
-  subst-fst f g x _ = J (λ y p → (u : Σ (f x) (g x)) → fst (subst (λ x → Σ (f x) (g x)) p u) ≡ subst f p (fst u)) λ u → cong fst (substRefl {B = (λ x → Σ (f x) (g x))} u) ∙ substRefl {B = f} (fst u) ⁻¹
+  p : pullbackΣ Bi ∣_∣ → ⟨ A ⟩
+  p (_ , x , _) = x
 
-  {-
-  subst-snd : ∀ {ℓ} → {A : Type ℓ} (f : A → Type) (g : (x : A) → f x → Type) (x y : A) (p : x ≡ y) (u : Σ (f x) (g x)) → snd (subst (λ x → Σ (f x) (g x)) p u) ≡ subst (λ x → g x (fst u)) p (snd u)
-  subst-snd f g x _ = J (λ y p → (u : Σ (f x) (g x)) → snd (subst (λ x → Σ (f x) (g x)) p u) ≡ subst g p (snd u)) λ u → cong snd (substRefl {B = (λ x → Σ (f x) (g x))} u) ∙ substRefl {B = g} (snd u) ⁻¹
-  -}
+  ∥p∥ : ∥ pullbackΣ Bi ∣_∣ ∥ 3 → ∥ ⟨ A ⟩ ∥ 3
+  ∥p∥ = ∥-∥ₕ-map p
 
-  lemma₂ : subst (λ BG → (BG B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG ⟩ × isGroupoid ⟨ BG ⟩) lemma₁ (roundtrip .snd) ≡ (Bi , conBG , grpBG)
-  lemma₂ = ΣPathP (lemma₂-a' , ΣPathP ({!!} , {!!})) where
+  lemma₂ : PathP (λ i → ⟨ lemma₁ i ⟩ → ∥ ⟨ A ⟩ ∥ 3) ∥p∥ Bi
+  lemma₂ = toPathP(transport-fun (cong ⟨_⟩ lemma₁) ∥p∥ Bi (∥-∥ₕ-elim (λ x → isOfHLevelTruncPath {x = ∥p∥ x}) λ a →
+      ∣ p a ∣
+    ≡⟨ a .snd .snd ⁻¹ ⟩
+      Bi (a .fst)
+    ≡⟨ cong Bi (transportIsoToPath (truncIdempotentIso 3 grpBG) ∣ a .fst ∣ ⁻¹) ⟩
+      Bi (transport (truncIdempotent 3 grpBG) ∣ a .fst ∣)
+    ≡⟨ cong Bi (cong (transport (truncIdempotent 3 grpBG)) (transportIsoToPath (is-1-connected-iso fst u-1-connected) ∣ a ∣ ⁻¹)) ⟩
+      Bi (transport (truncIdempotent 3 grpBG) (transport (isoToPath (is-1-connected-iso fst u-1-connected)) ∣ a ∣))
+    ≡⟨ cong Bi (transportComposite (isoToPath (is-1-connected-iso fst u-1-connected)) (truncIdempotent 3 grpBG)  ∣ a ∣ ⁻¹) ⟩
+      Bi (transport (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG) ∣ a ∣) ∎
+    ))
 
-    ∥p∥ : ∥ pullbackΣ (fst Bi) ∣_∣ ∥ 3 → ∥ ⟨ A ⟩ ∥ 3
-    ∥p∥ = ∥-∥ₕ-map λ x → x .snd .fst
+  lemma₃-core : (λ i → lemma₂ i (pt (lemma₁ i))) ≡ Bi-⋆ ⁻¹
+  lemma₃-core =
+      (λ i → lemma₂ i (pt (lemma₁ i)))
+    ≡⟨ {!!} ⟩
+      {!!}
+    ≡⟨ {!!} ⟩
+      Bi-⋆ ⁻¹ ∎
 
-    lemma₂-a : fst (fst (subst (λ BG → (BG B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG ⟩ × isGroupoid ⟨ BG ⟩) lemma₁ (roundtrip .snd))) ≡ fst Bi
-    lemma₂-a = transport-fun (cong ⟨_⟩ lemma₁) (roundtrip .snd .fst .fst) (Bi .fst) λ x → core-lemma₂-a x ⁻¹ where
+  -- No idea why but when I uncomment all of that, Agda goes in an infinite loop (or it gets stuck ≥ 10 minutes)
+  -- lemma₃ : PathP (λ i → toPathP {A = λ j → ⟨ lemma₁ j ⟩ → ∥ ⟨ A ⟩ ∥ 3} {x = ∥p∥} lemma₂ i (pt (lemma₁ i)) ≡ ∣ pt A ∣) refl Bi-⋆
+  -- lemma₃ = {!!}
+  --
+  --
+  -- leftinv : SubGroupπ₁'←PCCovering₀' A conA (SubGroupπ₁'→PCCovering₀' A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)) ≡ ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
+  -- leftinv = ΣPathP (ΣPathP (lemma₁ , toPathP lemma₂) , ΣPathP (lemma₃ , toPathP (isProp× isConnected'IsProp (isProp× isPropIsGroupoid (isPropΠ (λ _ → isPropIsSet))) _ _)))
 
-      core-lemma₂-a : (x : ∥ pullbackΣ (fst Bi) ∣_∣ ∥ 3) → Bi .fst (transport (cong fst lemma₁) x) ≡ ∥p∥ x
-      core-lemma₂-a = ∥-∥ₕ-elim (λ x → isOfHLevelTruncPath {y = ∥p∥ x}) λ x →
-          Bi .fst (transport (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG) ∣ x ∣)
-        ≡⟨ cong (Bi .fst) (transportComposite (isoToPath (is-1-connected-iso fst u-1-connected)) (truncIdempotent 3 grpBG) ∣ x ∣) ⟩
-          Bi .fst (transport (truncIdempotent 3 grpBG) (transport (isoToPath (is-1-connected-iso fst u-1-connected)) ∣ x ∣))
-        ≡⟨ cong (λ a → Bi .fst (transport (truncIdempotent 3 grpBG) a)) (transportIsoToPath (is-1-connected-iso fst u-1-connected) ∣ x ∣) ⟩
-          Bi .fst (transport (truncIdempotent 3 grpBG) ∣ fst x ∣)
-        ≡⟨ cong (Bi .fst) (transportIsoToPath (truncIdempotentIso 3 grpBG) ∣ fst x ∣) ⟩
-          Bi .fst (fst x)
-        ≡⟨ x .snd .snd ⟩
-          ∣ x .snd .fst ∣ ∎
+module RightInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
 
-    lemma₂-a'' : fst (subst (λ f → ((y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) × (f (pt BG) ≡ pt (∥ A ∥∙ 3))) lemma₂-a (snd (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd))))) ≡ fst (snd Bi)
-    lemma₂-a'' =
-        fst (subst (λ f → ((y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) × (f (pt BG) ≡ pt (∥ A ∥∙ 3))) lemma₂-a (snd (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd)))))
-      ≡⟨ cong (λ u → fst (subst (λ f → ((y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) × (f (pt BG) ≡ pt (∥ A ∥∙ 3))) lemma₂-a u)) lemma₂-a''₃ ⟩
-        fst (subst (λ f → ((y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) × (f (pt BG) ≡ pt (∥ A ∥∙ 3))) lemma₂-a (lemma₂-a''₁ , lemma₂-a''₂))
-      ≡⟨ subst-fst (λ f → (y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) (λ f _ → f (pt BG) ≡ pt (∥ A ∥∙ 3)) _ (fst Bi) lemma₂-a (lemma₂-a''₁ , lemma₂-a''₂) ⟩
-        subst (λ f → (y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber f y)) lemma₂-a lemma₂-a''₁
+  ∥p∥ : ∥ X ∥ 3 → ∥ ⟨ A ⟩ ∥ 3
+  ∥p∥ = ∥-∥ₕ-map p
+
+  X̃ = pullbackΣ {B = ⟨ A ⟩} ∥p∥ ∣_∣
+
+  p̃ : X̃ → ⟨ A ⟩
+  p̃ (_ , a , _) = a
+
+  e : X → X̃
+  e x = ∣ x ∣ , p x , refl
+
+  e-fib : (a : ⟨ A ⟩) → fiber p a → fiber p̃ a
+  e-fib _ (x , q) = (∣ x ∣ , p x , refl) , q
+
+  e'-fib : (a : ⟨ A ⟩) → fiber p̃ a → fiber p a
+  e'-fib a₀ ((x , a , q) , r) =
+    ∥-∥ₕ-elim
+      {B = λ x → (q : ∥p∥ x ≡ ∣ a ∣) → fiber p a₀}
+      (λ _ → isGroupoidΠ (λ _ → isSet→isGroupoid (fib-set a₀)))
+      (λ x q →
+        ∥-∥ₕ-elim
+        {B = λ _ → fiber p a₀}
+        (λ _ → fib-set a₀)
+        (λ q → x , q ∙ r)
+        (transport (PathIdTrunc 2) q)
+      )
+      x q
+
+  e'∘e : (a : ⟨ A ⟩) (x : X) (q : p x ≡ a) → e'-fib a (e-fib a (x , q)) ≡ (x , q)
+  e'∘e a x q =
+      ∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ r → x , r ∙ q) (transport (PathIdTrunc 2) refl)
+    ≡⟨ cong (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ r → x , r ∙ q)) (transportIsoToPath (PathIdTruncIso 2) refl ∙ transportRefl ∣ refl ∣) ⟩
+      x , refl ∙ q
+    ≡⟨ cong (λ q → x , q) (lUnit q ⁻¹) ⟩
+      x , q ∎
+
+  fibp̃-isSet : (a : ⟨ A ⟩) → isSet (fiber p̃ a)
+  fibp̃-isSet a = Subgroup→PCCovering₀.p-isCov₀ A (∥ X , x ∥∙ 3) conA (PCCovering₀→Subgroup.connected A (((X , x) , p) , p⋆ , hypCon , fib-set)) (PCCovering₀→Subgroup.Bi∙ A (((X , x) , p) , (p⋆ , hypCon , fib-set))) a
+
+  e∘e' : (a₀ : ⟨ A ⟩) (a : ⟨ A ⟩) (x : ∥ X ∥ 3) (q : ∥p∥ x ≡ ∣ a ∣) (r : a ≡ a₀) → e-fib a₀ (e'-fib a₀ ((x , a , q) , r)) ≡ ((x , a , q) , r)
+  e∘e' a₀ a x q r =
+    ∥-∥ₕ-elim
+    {B = λ x → (q : ∥p∥ x ≡ ∣ a ∣) → e-fib a₀ (e'-fib a₀ ((x , a , q) , r)) ≡ ((x , a , q) , r)}
+    (λ x → isGroupoidΠ (λ q → isSet→isGroupoid (isProp→isSet (fibp̃-isSet a₀ _ _))))
+    (λ x q →
+      subst (λ q → e-fib a₀ (e'-fib a₀ ((∣ x ∣ , a , q) , r)) ≡ ((∣ x ∣ , a , q) , r)) (transport⁻Transport (PathIdTrunc 2) q)
+      (∥-∥ₕ-elim
+        {B = λ q → e-fib a₀ (e'-fib a₀ ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) q) , r)) ≡ ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) q), r)}
+        (λ _ → isProp→isSet (fibp̃-isSet a₀ _ _))
+        (λ q →
+          J (λ a q → (r : a ≡ a₀) → e-fib a₀ (e'-fib a₀ ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , r)) ≡ ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , r))
+          (λ r →
+            e-fib a₀ (e'-fib a₀ ((∣ x ∣ , p x , transport⁻ (PathIdTrunc 2) ∣ refl ∣) , r))
+          ≡⟨⟩
+            e-fib a₀ (∥-∥ₕ-elim {B = λ _ → fiber p a₀} (λ _ → fib-set a₀) (λ q → x , q ∙ r) (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ refl ∣)))
+          ≡⟨ cong (λ u → e-fib a₀ (∥-∥ₕ-elim {B = λ _ → fiber p a₀} (λ _ → fib-set a₀) (λ q → x , q ∙ r) u)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣) ⟩
+            e-fib a₀ (x , refl ∙ r)
+          ≡⟨⟩
+            (∣ x ∣ , p x , refl) , refl ∙ r
+          ≡⟨ ΣPathP (refl , lUnit r ⁻¹) ⟩
+            (∣ x ∣ , p x , refl) , r
+          ≡⟨ ΣPathP ((ΣPathP (refl , (ΣPathP (refl , ( transportIsoToPath⁻ (PathIdTruncIso 2) ∣ refl ∣ ⁻¹))))) , toPathP (transportRefl r)) ⟩
+            (∣ x ∣ , p x , transport⁻ (PathIdTrunc 2) ∣ refl ∣) , r ∎
+          ) q r
+        ) (transport (PathIdTrunc 2) q))
+    ) x q
+
+  fibp≡fibp̃ : (a : ⟨ A ⟩) → fiber p a ≡ fiber p̃ a
+  fibp≡fibp̃ a = isoToPath (iso (e-fib a) (e'-fib a) (λ x → e∘e' a (x .fst .snd .fst) (x .fst .fst) (x .fst .snd .snd) (x .snd)) λ x → e'∘e a (x .fst) (x .snd))
+
+  X̃≡X : X̃ ≡ X
+  X̃≡X =
+      X̃
+    ≡⟨ ua (totalEquiv p̃) ⟩
+      Σ ⟨ A ⟩ (fiber p̃)
+    ≡⟨ Σ-cong-snd (sym ∘ fibp≡fibp̃) ⟩
+      Σ ⟨ A ⟩ (fiber p)
+    ≡⟨ ua (totalEquiv p) ⁻¹ ⟩
+      X ∎
+
+  x̃≡x : transport X̃≡X (∣ x ∣ , pt A , cong ∣_∣ p⋆) ≡ x
+  x̃≡x =
+      transport (ua (totalEquiv p̃) ∙ Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (∣ x ∣ , pt A , cong ∣_∣ p⋆)
+    ≡⟨ transportComposite (ua (totalEquiv p̃)) (Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) ((∣ x ∣ , pt A , cong ∣_∣ p⋆)) ⟩
+      transport (Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))
+    ≡⟨ transportComposite (Σ-cong-snd (sym ∘ fibp≡fibp̃)) ((ua (totalEquiv p) ⁻¹) ∙ refl) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆)) ⟩
+      transport ((ua (totalEquiv p) ⁻¹) ∙ refl) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆)))
+    ≡⟨ transportComposite (ua (totalEquiv p) ⁻¹) refl (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))) ⟩
+      transport refl (transport (ua (totalEquiv p) ⁻¹) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))))
+    ≡⟨ transportRefl (transport (ua (totalEquiv p) ⁻¹) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆)))) ⟩
+      transport (ua (totalEquiv p) ⁻¹) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆)))
+    ≡⟨ ~uaβ (totalEquiv p) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))) ⟩
+      (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))) .snd .fst
+    ≡⟨ cong (λ u → (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) u) .snd .fst) (uaβ (totalEquiv p̃) (∣ x ∣ , pt A , cong ∣_∣ p⋆)) ⟩
+      (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (pt A , (∣ x ∣ , pt A , cong ∣_∣ p⋆) , refl)) .snd .fst
+    ≡⟨⟩
+      transport refl x
+    ≡⟨ transportRefl x ⟩
+      x ∎
+
+  p̃≡p : subst (λ X̂ → X̂ → ⟨ A ⟩) X̃≡X p̃ ≡ p
+  p̃≡p = transport-fun X̃≡X p̃ p (sym ∘ lemma) where
+
+
+    lemma : (x̃ : X̃) → p (transport X̃≡X x̃) ≡ p̃ x̃
+    lemma (x , a , r) =
+        p (transport (ua (totalEquiv p̃) ∙ Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (x , a , r))
+      ≡⟨ cong p (transportComposite (ua (totalEquiv p̃)) (Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (x , a , r)) ⟩
+        p (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (transport (ua (totalEquiv p̃)) (x , a , r)))
+      ≡⟨ cong p (transportComposite (Σ-cong-snd (sym ∘ fibp≡fibp̃)) ((ua (totalEquiv p) ⁻¹) ∙ refl) (transport (ua (totalEquiv p̃)) (x , a , r))) ⟩
+        p (transport ((ua (totalEquiv p) ⁻¹) ∙ refl) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r))))
+      ≡⟨ cong p (transportComposite (ua (totalEquiv p) ⁻¹) refl (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r))) ) ⟩
+        p (transport refl (transport ((ua (totalEquiv p) ⁻¹)) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r)))))
+      ≡⟨ cong p (transportRefl (transport ((ua (totalEquiv p) ⁻¹)) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r)))) ) ⟩
+        p (transport ((ua (totalEquiv p) ⁻¹)) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r))))
+      ≡⟨ cong p (~uaβ (totalEquiv p) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r)))) ⟩
+        p (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r)) .snd .fst)
+      ≡⟨ cong (λ u → p (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) u .snd .fst)) (uaβ (totalEquiv p̃) (x , a , r)) ⟩
+        p (transport⁻ (Σ-cong-snd fibp≡fibp̃) (a , (x , a , r) , refl) .snd .fst)
+      ≡⟨ cong (λ u → p (u .snd .fst)) (transport-Σ (a , (x , a , r) , refl) (sym ∘ fibp≡fibp̃)) ⟩
+        p (transport⁻ (fibp≡fibp̃ a) ((x , a , r), refl) .fst)
       ≡⟨ {!!} ⟩
-        fst (snd Bi) ∎ where
+        a ∎
 
-      lemma₂-a''₁ : (y : ⟨ ∥ A ∥∙ 3 ⟩) → isSet (fiber (fst (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd)))) y)
-      lemma₂-a''₁ y = subst isSet (
-          fiber (fst Bi) y
-        ≡⟨ cong (λ f → fiber f y) (lemma₂-a ⁻¹) ⟩
-          fiber (fst (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd)))) y ∎
-        ) (Bi .snd .fst y)
+  rightInv : SubGroupπ₁'→PCCovering₀' A conA (SubGroupπ₁'←PCCovering₀' A conA (((X , x) , p) , p⋆ , hypCon , fib-set)) ≡ (((X , x) , p) , p⋆ , hypCon , fib-set)
+  rightInv = ΣPathP ((ΣPathP (ΣPathP (X̃≡X  , toPathP x̃≡x) , toPathP p̃≡p)) , {!!})
 
-      lemma₂-a''₂ : fst (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd))) (pt BG) ≡ pt (∥ A ∥∙ 3)
-      lemma₂-a''₂ =
-          fst (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd))) (pt BG)
-        ≡⟨ funExt⁻ lemma₂-a (pt BG) ⟩
-          fst Bi (pt BG)
-        ≡⟨ Bi .snd .snd ⟩
-          pt (∥ A ∥∙ 3) ∎
-
-
-      lemma₂-a''₃ : snd (fst (subst (λ BG₁ → (BG₁ B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG₁ ⟩ × isGroupoid ⟨ BG₁ ⟩) lemma₁ (roundtrip .snd))) ≡ (lemma₂-a''₁ , lemma₂-a''₂)
-      lemma₂-a''₃ = {!!}
-
-
-    lemma₂-a' : fst (subst (λ BG → (BG B↪∙ (∥ A ∥∙ 3)) × isConnected' ⟨ BG ⟩ × isGroupoid ⟨ BG ⟩) lemma₁ (roundtrip .snd)) ≡ Bi
-    lemma₂-a' = ΣPathP (lemma₂-a , toPathP (ΣPathP (lemma₂-a'' , {!!})))
-
-  leftinv : roundtrip ≡ (BG , Bi , conBG , grpBG)
-  leftinv = ΣPathP (lemma₁ , ΣPathP ({!!} , {!!}))
-
-
+{-
 module GaloisCorrespondance (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) where
 
-  galois-correspondance≅ : SubGroupπ₁ A ≅ PCCovering₀ A
-  galois-correspondance≅ ._≅_.fun = SubGroupπ₁→PCCovering₀ A conA
-  galois-correspondance≅ ._≅_.inv = SubGroupπ₁←PCCovering₀ A conA
-  galois-correspondance≅ ._≅_.rightInv x = {!!}
-  galois-correspondance≅ ._≅_.leftInv = {!!}
+  galois-correspondance≅' : SubGroupπ₁' A ≅ PCCovering₀' A
+  galois-correspondance≅' ._≅_.fun = SubGroupπ₁'→PCCovering₀' A conA
+  galois-correspondance≅' ._≅_.inv = SubGroupπ₁'←PCCovering₀' A conA
+  galois-correspondance≅' ._≅_.rightInv x = {!!}
+  galois-correspondance≅' ._≅_.leftInv = {!!}
 
-  galois-correspondance : SubGroupπ₁ A ≃ PCCovering₀ A
-  galois-correspondance = isoToEquiv galois-correspondance≅
+  galois-correspondance' : SubGroupπ₁' A ≃ PCCovering₀' A
+  galois-correspondance' = isoToEquiv galois-correspondance≅'
+-}

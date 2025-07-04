@@ -20,23 +20,4 @@ open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; 
 open import Cubical.Homotopy.Connected
 open import Cubical.WildCat.Base
 
-subst-snd : ∀ {ℓ} → {A : Type ℓ} (f : A → Type) (g : (x : A) → f x → Type) (x y : A) (p : x ≡ y) (u : Σ (f x) (g x)) →
-  subst (λ x → Σ (f x) (g x)) p u ≡ ( subst f p (fst u) , transport (λ i → g (p i) (transport (λ j → f (p (i ∧ j))) (fst u))) (transport (cong (g x) (transportRefl (fst u) ⁻¹)) (snd u)) )
-subst-snd f g x _ p u = J
-  (λ y p → subst (λ x → Σ (f x) (g x)) p u ≡ ( subst f p (fst u) , transport (λ i → g (p i) (transport (λ j → f (p (i ∧ j))) (fst u))) (transport (cong (g x) (transportRefl (fst u) ⁻¹)) (snd u)) ))
-  (
-    ΣPathTransport→PathΣ _ _ ((
-        fst (subst (λ x₁ → Σ (f x₁) (g x₁)) refl u)
-      ≡⟨ cong fst (transportRefl u) ⟩
-        fst u
-      ≡⟨ transportRefl (fst u) ⁻¹ ⟩
-        subst f refl (fst u) ∎
-    ) , (
-        transport (λ i → g x (step-≡ (fst (subst (λ x₁ → Σ (f x₁) (g x₁)) (λ _ → x) u)) (step-≡ (fst u) (subst f (λ _ → x) (fst u) ∎) (transportRefl (fst u) ⁻¹)) (λ i₁ → fst (transportRefl u i₁)) i)) (transp (λ i → Σ (f (refl i)) (g (refl i))) i0 u .snd)
-      ≡⟨ {!!} ⟩
-        {!!}
-      ≡⟨ {!!} ⟩
-        transport refl (transport (λ i → g x ((transportRefl (fst u) ⁻¹) i)) (snd u)) ∎
-    )
-  ))
-  p
+
