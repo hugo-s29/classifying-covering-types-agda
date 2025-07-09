@@ -422,66 +422,90 @@ transport-Σ {A = A} x@(a , b) p = fromPathP lem
   lem : PathP (λ i → Σ A (λ a → p a i)) x (fst x , transport (p (fst x)) (snd x))
   lem = ΣPathP (refl , (transport-filler (p a) b))
 
+toPathP-lemma : {A : Type} {B : A → Type} (a b : A) (x : B a) (y : B b) (q : a ≡ b) (p : subst B q x ≡ y) (i : I) → toPathP {A = λ i → B (q i)} {x = x} p i ≡ subst B (λ j → q (i ∧ j)) x
+toPathP-lemma a b x y q p = {!!}
+
 module LeftInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib) : SubGroupπ₁' A) where
 
   Bi∙ : BG B↪∙ (∥ A ∥∙ 3)
   Bi∙ = Bi , Bi-fib , Bi-⋆
 
-  is-1-connected-Ã : (x : ∥ ⟨ A ⟩ ∥ 3) → isConnected 3 (Subgroup→PCCovering₀.Ã A BG conA conBG Bi∙ x)
-  is-1-connected-Ã = ∥-∥ₕ-elim (λ _ → isSet→isGroupoid (isProp→isSet isPropIsContr)) is-1-connected-Ã∣a∣ where
+  t : ⟨ BG ⟩ → ∥ pullbackΣ Bi ∣_∣ ∥ 3
+  t g = ∥-∥ₕ-elim
+    {B = λ a → Bi g ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
+    (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3)
+    (λ a r → ∣ g , a , r ∣)
+    (Bi g)
+    refl
 
-    is-1-connected-Ã∣a∣ : (a : ⟨ A ⟩) → isConnected 3 (Subgroup→PCCovering₀.Ã A BG conA conBG Bi∙ ∣ a ∣)
-    is-1-connected-Ã∣a∣ a = subst (isConnected 3) (Subgroup→PCCovering₀.Ã-paths≡Ã-pullback A BG conA conBG Bi∙ a) (UniversalCovering.1-connected (⟨ A ⟩ , a) conA)
+  s : ∥ pullbackΣ Bi ∣_∣ ∥ 3 → ⟨ BG ⟩
+  s = ∥-∥ₕ-elim
+    {B = λ _ → ⟨ BG ⟩}
+    (λ _ → grpBG)
+    (λ (g , a , r) → g)
 
-  u-1-connected : isConnectedFun 3 (fst {A = ⟨ BG ⟩} {B = λ g → Σ ⟨ A ⟩ λ a → Bi g ≡ ∣ a ∣})
-  u-1-connected g = subst (isConnected 3) (Subgroup→PCCovering₀.Ã≡fibu A BG conA conBG Bi∙ g) (is-1-connected-Ã (Bi g))
+  t∘s : (x : ∥ pullbackΣ Bi ∣_∣ ∥ 3) → t (s x) ≡ x
+  t∘s = ∥-∥ₕ-elim
+    {B = λ x → t (s x) ≡ x}
+    (λ x → isOfHLevelTruncPath {y = x})
+    (λ (g , a , r) → cong₂ (∥-∥ₕ-elim {B = λ a → Bi g ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ g , a , r ∣)) r (toPathP ( substInPathsL r refl ∙ lUnit r ⁻¹)))
 
-  lemma₁ : ∥ pullbackΣ Bi ∣_∣ , pt BG , pt A , Bi-⋆ ∥∙ 3 ≡ BG
-  lemma₁ = ΣPathTransport→PathΣ _ _ (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG , (
-      transport (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG) ∣ pt BG , pt A , Bi-⋆ ∣
-    ≡⟨ transportComposite (isoToPath (is-1-connected-iso fst u-1-connected)) (truncIdempotent 3 grpBG) ∣ pt BG , pt A , Bi-⋆ ∣ ⟩
-      transport (truncIdempotent 3 grpBG) (transport (isoToPath (is-1-connected-iso fst u-1-connected)) ∣ pt BG , pt A , Bi-⋆ ∣)
-    ≡⟨ cong (transport (truncIdempotent 3 grpBG)) (transportIsoToPath (is-1-connected-iso fst u-1-connected) ∣ pt BG , pt A , Bi-⋆ ∣) ⟩
-      transport (truncIdempotent 3 grpBG) ∣ snd BG ∣
-    ≡⟨ transportIsoToPath (truncIdempotentIso 3 grpBG) ∣ snd BG ∣ ⟩
-      snd BG ∎
-    ))
+  s∘t : (g : ⟨ BG ⟩) → s (t g) ≡ g
+  s∘t g = ∥-∥ₕ-elim {B = λ a → (r : Bi g ≡ a) → s (∥-∥ₕ-elim {B = λ a → Bi g ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ g , a , r ∣) a r)  ≡ g}
+    (λ _ → isGroupoidΠ λ _ → isSet→isGroupoid (grpBG _ _)) (λ _ _ → refl) (Bi g) refl
 
+  ⟨BG⟩≅∥X∥ : ⟨ BG ⟩ ≅ (∥ pullbackΣ Bi ∣_∣ ∥ 3)
+  ⟨BG⟩≅∥X∥ = iso t s t∘s s∘t
 
-  p : pullbackΣ Bi ∣_∣ → ⟨ A ⟩
-  p (_ , x , _) = x
+  ⟨BG⟩≡∥X∥ : ⟨ BG ⟩ ≡ ∥ pullbackΣ Bi ∣_∣ ∥ 3
+  ⟨BG⟩≡∥X∥ = isoToPath ⟨BG⟩≅∥X∥
+
+  ptBG≡∣x∣ : PathP (λ i → ⟨BG⟩≡∥X∥ i) (pt BG) ∣ pt BG , pt A , Bi-⋆ ∣
+  ptBG≡∣x∣ = toPathP (
+      transport ⟨BG⟩≡∥X∥ (pt BG)
+    ≡⟨ transportIsoToPath ⟨BG⟩≅∥X∥ (pt BG) ⟩
+      ∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) (Bi (pt BG)) refl
+    ≡⟨ cong₂ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣)) Bi-⋆ (toPathP ( substInPathsL Bi-⋆ refl ∙ lUnit _ ⁻¹)) ⟩
+      ∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) ∣ pt A ∣ Bi-⋆
+    ≡⟨⟩
+      ∣ pt BG , pt A , Bi-⋆ ∣ ∎)
 
   ∥p∥ : ∥ pullbackΣ Bi ∣_∣ ∥ 3 → ∥ ⟨ A ⟩ ∥ 3
-  ∥p∥ = ∥-∥ₕ-map p
+  ∥p∥ = ∥-∥ₕ-map (λ x → x .snd .fst)
 
-  lemma₂ : PathP (λ i → ⟨ lemma₁ i ⟩ → ∥ ⟨ A ⟩ ∥ 3) ∥p∥ Bi
-  lemma₂ = toPathP(transport-fun (cong ⟨_⟩ lemma₁) ∥p∥ Bi (∥-∥ₕ-elim (λ x → isOfHLevelTruncPath {x = ∥p∥ x}) λ a →
-      ∣ p a ∣
-    ≡⟨ a .snd .snd ⁻¹ ⟩
-      Bi (a .fst)
-    ≡⟨ cong Bi (transportIsoToPath (truncIdempotentIso 3 grpBG) ∣ a .fst ∣ ⁻¹) ⟩
-      Bi (transport (truncIdempotent 3 grpBG) ∣ a .fst ∣)
-    ≡⟨ cong Bi (cong (transport (truncIdempotent 3 grpBG)) (transportIsoToPath (is-1-connected-iso fst u-1-connected) ∣ a ∣ ⁻¹)) ⟩
-      Bi (transport (truncIdempotent 3 grpBG) (transport (isoToPath (is-1-connected-iso fst u-1-connected)) ∣ a ∣))
-    ≡⟨ cong Bi (transportComposite (isoToPath (is-1-connected-iso fst u-1-connected)) (truncIdempotent 3 grpBG)  ∣ a ∣ ⁻¹) ⟩
-      Bi (transport (isoToPath (is-1-connected-iso fst u-1-connected) ∙ truncIdempotent 3 grpBG) ∣ a ∣) ∎
-    ))
+  Bi≡∥p∥ : PathP (λ i → ⟨BG⟩≡∥X∥ i → ∥ ⟨ A ⟩ ∥ 3) Bi ∥p∥
+  Bi≡∥p∥ = symP (subst (PathP (λ i → ⟨BG⟩≡∥X∥ (~ i) → ∥ ⟨ A ⟩ ∥ 3) ∥p∥) (funExt lemma) (funTypeTransp (λ X → X) (λ _ → ∥ ⟨ A ⟩ ∥ 3) (sym ⟨BG⟩≡∥X∥) ∥p∥)) where
 
-  lemma₃-core : (λ i → lemma₂ i (pt (lemma₁ i))) ≡ Bi-⋆ ⁻¹
-  lemma₃-core =
-      (λ i → lemma₂ i (pt (lemma₁ i)))
-    ≡⟨ {!!} ⟩
-      {!!}
-    ≡⟨ {!!} ⟩
-      Bi-⋆ ⁻¹ ∎
+    lemma : (g : ⟨ BG ⟩) → transport refl (∥p∥ (transport ⟨BG⟩≡∥X∥ g)) ≡ Bi g
+    lemma g =
+        transport refl (∥p∥ (transport ⟨BG⟩≡∥X∥ g))
+      ≡⟨ transportRefl _ ⟩
+        ∥p∥ (transport ⟨BG⟩≡∥X∥ g)
+      ≡⟨ cong ∥p∥ (transportIsoToPath ⟨BG⟩≅∥X∥ g) ⟩
+        ∥p∥ (t g)
+      ≡⟨ ∥-∥ₕ-elim {B = λ x → ∥p∥ x ≡ Bi (s x)} (λ x → isOfHLevelTruncPath {x = ∥p∥ x}) (λ (_ , _ , q) → sym q) (t g) ⟩
+        Bi (s (t g))
+      ≡⟨ cong Bi (s∘t g) ⟩
+        Bi g ∎
 
-  -- No idea why but when I uncomment all of that, Agda goes in an infinite loop (or it gets stuck ≥ 10 minutes)
-  -- lemma₃ : PathP (λ i → toPathP {A = λ j → ⟨ lemma₁ j ⟩ → ∥ ⟨ A ⟩ ∥ 3} {x = ∥p∥} lemma₂ i (pt (lemma₁ i)) ≡ ∣ pt A ∣) refl Bi-⋆
-  -- lemma₃ = {!!}
-  --
-  --
-  -- leftinv : SubGroupπ₁'←PCCovering₀' A conA (SubGroupπ₁'→PCCovering₀' A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)) ≡ ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
-  -- leftinv = ΣPathP (ΣPathP (lemma₁ , toPathP lemma₂) , ΣPathP (lemma₃ , toPathP (isProp× isConnected'IsProp (isProp× isPropIsGroupoid (isPropΠ (λ _ → isPropIsSet))) _ _)))
+  Bi⋆≡refl' : subst (λ X → {!!}) ⟨BG⟩≡∥X∥ Bi-⋆ ≡ refl
+  Bi⋆≡refl' = {!!}
+
+  Bi⋆≡refl : PathP (λ i → Bi≡∥p∥ i (ptBG≡∣x∣ i) ≡ ∣ pt A ∣) Bi-⋆ refl
+  Bi⋆≡refl = {!!}
+
+  {-
+      subst (λ x → x ≡ ∣ pt A ∣) (λ i → Bi≡∥p∥ i (ptBG≡∣x∣ i)) Bi-⋆
+    ≡⟨ substInPathsR (λ i → Bi≡∥p∥ i (ptBG≡∣x∣ i)) Bi-⋆ ⟩
+      (λ i → Bi≡∥p∥ i (ptBG≡∣x∣ i)) ⁻¹ ∙ Bi-⋆
+    ≡⟨ cong (λ x → x ⁻¹ ∙ Bi-⋆) Bi⋆≡path ⟩
+      Bi-⋆ ⁻¹ ∙ Bi-⋆
+    ≡⟨ lCancel Bi-⋆ ⟩
+      refl
+  -}
+
+  leftInv : SubGroupπ₁'←PCCovering₀' A conA (SubGroupπ₁'→PCCovering₀' A conA ((BG , Bi) , Bi-⋆ , conBG , grpBG , Bi-fib)) ≡ ((BG , Bi) , Bi-⋆ , conBG , grpBG , Bi-fib)
+  leftInv = ΣPathP ((ΣPathP ((ΣPathP (⟨BG⟩≡∥X∥ , ptBG≡∣x∣)) , Bi≡∥p∥)) , ΣPathP ({!!} , toPathP (isProp× isConnected'IsProp (isProp× isPropIsGroupoid (isPropΠ (λ _ → isPropIsSet))) _ _))) ⁻¹
 
 module RightInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
 
@@ -555,62 +579,66 @@ module RightInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x
   fibp≡fibp̃ : (a : ⟨ A ⟩) → fiber p a ≡ fiber p̃ a
   fibp≡fibp̃ a = isoToPath (iso (e-fib a) (e'-fib a) (λ x → e∘e' a (x .fst .snd .fst) (x .fst .fst) (x .fst .snd .snd) (x .snd)) λ x → e'∘e a (x .fst) (x .snd))
 
-  X̃≡X : X̃ ≡ X
-  X̃≡X =
-      X̃
-    ≡⟨ ua (totalEquiv p̃) ⟩
-      Σ ⟨ A ⟩ (fiber p̃)
-    ≡⟨ Σ-cong-snd (sym ∘ fibp≡fibp̃) ⟩
+  X≡X̃ : X ≡ X̃
+  X≡X̃ =
+      X
+    ≡⟨ ua (totalEquiv p) ⟩
       Σ ⟨ A ⟩ (fiber p)
-    ≡⟨ ua (totalEquiv p) ⁻¹ ⟩
-      X ∎
-
-  x̃≡x : transport X̃≡X (∣ x ∣ , pt A , cong ∣_∣ p⋆) ≡ x
-  x̃≡x =
-      transport (ua (totalEquiv p̃) ∙ Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (∣ x ∣ , pt A , cong ∣_∣ p⋆)
-    ≡⟨ transportComposite (ua (totalEquiv p̃)) (Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) ((∣ x ∣ , pt A , cong ∣_∣ p⋆)) ⟩
-      transport (Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))
-    ≡⟨ transportComposite (Σ-cong-snd (sym ∘ fibp≡fibp̃)) ((ua (totalEquiv p) ⁻¹) ∙ refl) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆)) ⟩
-      transport ((ua (totalEquiv p) ⁻¹) ∙ refl) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆)))
-    ≡⟨ transportComposite (ua (totalEquiv p) ⁻¹) refl (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))) ⟩
-      transport refl (transport (ua (totalEquiv p) ⁻¹) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))))
-    ≡⟨ transportRefl (transport (ua (totalEquiv p) ⁻¹) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆)))) ⟩
-      transport (ua (totalEquiv p) ⁻¹) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆)))
-    ≡⟨ ~uaβ (totalEquiv p) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))) ⟩
-      (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (∣ x ∣ , pt A , cong ∣_∣ p⋆))) .snd .fst
-    ≡⟨ cong (λ u → (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) u) .snd .fst) (uaβ (totalEquiv p̃) (∣ x ∣ , pt A , cong ∣_∣ p⋆)) ⟩
-      (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (pt A , (∣ x ∣ , pt A , cong ∣_∣ p⋆) , refl)) .snd .fst
-    ≡⟨⟩
-      transport refl x
-    ≡⟨ transportRefl x ⟩
-      x ∎
-
-  p̃≡p : subst (λ X̂ → X̂ → ⟨ A ⟩) X̃≡X p̃ ≡ p
-  p̃≡p = transport-fun X̃≡X p̃ p (sym ∘ lemma) where
+    ≡⟨ Σ-cong-snd fibp≡fibp̃ ⟩
+      Σ ⟨ A ⟩ (fiber p̃)
+    ≡⟨ ua (totalEquiv p̃) ⁻¹ ⟩
+      X̃ ∎
 
 
-    lemma : (x̃ : X̃) → p (transport X̃≡X x̃) ≡ p̃ x̃
-    lemma (x , a , r) =
-        p (transport (ua (totalEquiv p̃) ∙ Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (x , a , r))
-      ≡⟨ cong p (transportComposite (ua (totalEquiv p̃)) (Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (x , a , r)) ⟩
-        p (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃) ∙ (ua (totalEquiv p) ⁻¹) ∙ refl) (transport (ua (totalEquiv p̃)) (x , a , r)))
-      ≡⟨ cong p (transportComposite (Σ-cong-snd (sym ∘ fibp≡fibp̃)) ((ua (totalEquiv p) ⁻¹) ∙ refl) (transport (ua (totalEquiv p̃)) (x , a , r))) ⟩
-        p (transport ((ua (totalEquiv p) ⁻¹) ∙ refl) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r))))
-      ≡⟨ cong p (transportComposite (ua (totalEquiv p) ⁻¹) refl (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r))) ) ⟩
-        p (transport refl (transport ((ua (totalEquiv p) ⁻¹)) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r)))))
-      ≡⟨ cong p (transportRefl (transport ((ua (totalEquiv p) ⁻¹)) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r)))) ) ⟩
-        p (transport ((ua (totalEquiv p) ⁻¹)) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r))))
-      ≡⟨ cong p (~uaβ (totalEquiv p) (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r)))) ⟩
-        p (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) (transport (ua (totalEquiv p̃)) (x , a , r)) .snd .fst)
-      ≡⟨ cong (λ u → p (transport (Σ-cong-snd (sym ∘ fibp≡fibp̃)) u .snd .fst)) (uaβ (totalEquiv p̃) (x , a , r)) ⟩
-        p (transport⁻ (Σ-cong-snd fibp≡fibp̃) (a , (x , a , r) , refl) .snd .fst)
-      ≡⟨ cong (λ u → p (u .snd .fst)) (transport-Σ (a , (x , a , r) , refl) (sym ∘ fibp≡fibp̃)) ⟩
-        p (transport⁻ (fibp≡fibp̃ a) ((x , a , r), refl) .fst)
-      ≡⟨ {!!} ⟩
-        a ∎
+  transportX≡X̃ : (x : X) → transport X≡X̃ x ≡ e x
+  transportX≡X̃ x =
+      transport (ua (totalEquiv p) ∙ Σ-cong-snd fibp≡fibp̃ ∙ ua (totalEquiv p̃) ⁻¹ ∙ refl) x
+    ≡⟨ transportComposite (ua (totalEquiv p)) (Σ-cong-snd fibp≡fibp̃ ∙ ua (totalEquiv p̃) ⁻¹ ∙ refl) x ⟩
+      transport (Σ-cong-snd fibp≡fibp̃ ∙ ua (totalEquiv p̃) ⁻¹ ∙ refl) (transport (ua (totalEquiv p)) x)
+    ≡⟨ transportComposite (Σ-cong-snd fibp≡fibp̃) (ua (totalEquiv p̃) ⁻¹ ∙ refl) (transport (ua (totalEquiv p)) x) ⟩
+      transport (ua (totalEquiv p̃) ⁻¹ ∙ refl) (transport (Σ-cong-snd fibp≡fibp̃) (transport (ua (totalEquiv p)) x))
+    ≡⟨ transportComposite (ua (totalEquiv p̃) ⁻¹) refl (transport (Σ-cong-snd fibp≡fibp̃) (transport (ua (totalEquiv p)) x)) ⟩
+      transport refl (transport (ua (totalEquiv p̃) ⁻¹) (transport (Σ-cong-snd fibp≡fibp̃) (transport (ua (totalEquiv p)) x)))
+    ≡⟨ transportRefl (transport (ua (totalEquiv p̃) ⁻¹) (transport (Σ-cong-snd fibp≡fibp̃) (transport (ua (totalEquiv p)) x))) ⟩
+      transport (ua (totalEquiv p̃) ⁻¹) (transport (Σ-cong-snd fibp≡fibp̃) (transport (ua (totalEquiv p)) x))
+    ≡⟨ cong (λ u → transport (ua (totalEquiv p̃) ⁻¹) (transport (Σ-cong-snd fibp≡fibp̃) u)) (uaβ (totalEquiv p) x) ⟩
+      transport (ua (totalEquiv p̃) ⁻¹) (transport (Σ-cong-snd fibp≡fibp̃) (p x , x , refl))
+    ≡⟨ cong (transport (ua (totalEquiv p̃) ⁻¹)) (transportRefl (p x , (∣ x ∣ , p x , refl) , refl)) ⟩
+      transport (ua (totalEquiv p̃) ⁻¹) (p x , (∣ x ∣ , p x , refl) , refl)
+    ≡⟨ ~uaβ (totalEquiv p̃) (p x , (∣ x ∣ , p x , refl) , refl) ⟩
+      e x ∎
+
+  x≡x̃ : PathP (λ i → X≡X̃ i) x (∣ x ∣ , pt A , cong ∣_∣ p⋆)
+  x≡x̃ = toPathP (
+      transport X≡X̃ x
+    ≡⟨ transportX≡X̃ x ⟩
+      ∣ x ∣ , p x , cong ∣_∣ refl
+    ≡⟨ ΣPathP (refl , (ΣPathP (p⋆ , (toPathP lemma)))) ⟩
+      ∣ x ∣ , pt A , cong ∣_∣ p⋆ ∎)
+    where
+
+    lemma : subst (λ a → ∣ p x ∣ ≡ ∣ a ∣) p⋆ refl ≡ cong ∣_∣ p⋆
+    lemma = substInPaths (λ _ → ∣ p x ∣) ∣_∣ p⋆ refl ∙ lUnit _ ⁻¹ ∙ lUnit _ ⁻¹
+
+  p≡p̃ : PathP (λ i → X≡X̃ i → ⟨ A ⟩) p p̃
+  p≡p̃ = symP (transport (cong (λ p → PathP (λ i → X≡X̃ (~ i) → ⟨ A ⟩) p̃ p) (funExt lemma)) (funTypeTransp (λ X → X) (λ _ → ⟨ A ⟩) (sym X≡X̃) p̃ ))
+    where
+
+    lemma : (x : X) → transport refl (p̃ (transport X≡X̃ x)) ≡ p x
+    lemma x =
+        transport refl (p̃ (transport X≡X̃ x))
+      ≡⟨ transportRefl (p̃ (transport X≡X̃ x)) ⟩
+        p̃ (transport X≡X̃ x)
+      ≡⟨ cong p̃ (transportX≡X̃ x) ⟩
+        p̃ (e x)
+      ≡⟨⟩
+        p x ∎
+
+  p⋆≡refl : PathP (λ i → p≡p̃ i (x≡x̃ i) ≡ pt A) p⋆ refl
+  p⋆≡refl = {!!}
 
   rightInv : SubGroupπ₁'→PCCovering₀' A conA (SubGroupπ₁'←PCCovering₀' A conA (((X , x) , p) , p⋆ , hypCon , fib-set)) ≡ (((X , x) , p) , p⋆ , hypCon , fib-set)
-  rightInv = ΣPathP ((ΣPathP (ΣPathP (X̃≡X  , toPathP x̃≡x) , toPathP p̃≡p)) , {!!})
+  rightInv = ΣPathP ((ΣPathP ((ΣPathP (X≡X̃ , x≡x̃)) , p≡p̃)) , (ΣPathP ({!!} , toPathP (isProp× isConnected'IsProp (isPropΠ (λ _ → isPropIsSet)) _ _)))) ⁻¹
 
 {-
 module GaloisCorrespondance (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) where
