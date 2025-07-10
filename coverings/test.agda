@@ -58,8 +58,6 @@ compPathP'-refl-refl :
 compPathP'-refl-refl = {!!}
 
 
-
-
 congP-compPathP' :
   ∀ {ℓ ℓ' ℓ''}
   {A : Type ℓ}
@@ -104,11 +102,9 @@ congP-compPathP' {A = A} {B = B} {C = C} x y p x' y' = JDep {B = B} (λ y p y' P
     congP {B = λ _ _ → C} (λ i → compPathP' {B = λ a → B a → C} {q = q} R S i) (compPathP' {B = B} {q = q} refl Q)
     ≡ compPathP' {p = refl} {q = q} (congP (λ i → R i) refl) (congP (λ i → S i) Q)
   ) (λ f g h R S →
-    (λ i → compPathP' {B = λ a → B a → C} {p = refl {x = x}} {q = refl} R S i (compPathP' {B = B} {q = refl} (λ _ → x') (λ _ → x') i))
+    congP (λ i → compPathP' {B = λ a → B a → C} R S i) (compPathP' {B = B} {x' = x'} refl refl)
     ≡⟨ {!!} ⟩
-    (λ i → compPathP' {B = λ a → B a → C} {p = refl {x = x}} {q = refl} R S i {!!})
-    ≡⟨ {!!} ⟩
-    (λ i → compPathP' {B = λ a → B a → C} {p = refl {x = x}} {q = refl} R S i {!!})
+    congP (λ i → compPathP' {B = λ a → B a → C} R S i) ? -- j'ai envie de mettre refl_x' ici, mais ça ne type pas car refl ∙ refl n'est pas définitionnellement égal à refl
     ≡⟨ {!!} ⟩
     compPathP' {p = refl {x = x}} {q = refl} (λ i → R i x') (λ i → S i x') ∎
     ) q) p
