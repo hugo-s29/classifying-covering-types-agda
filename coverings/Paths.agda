@@ -20,44 +20,16 @@ open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; 
 open import Cubical.Homotopy.Connected
 open import Cubical.WildCat.Base
 
-{-
-open import Agda.Primitive using (Level; _⊔_; lsuc; lzero)
-open import Cubical.Core.Everything
-open import Cubical.Foundations.Prelude
-
-congP-compPathP :
-  ∀ {ℓ ℓ'}
-  (A : I → Type ℓ)
-  {B_i1 : Type ℓ}
-  (B : A i1 ≡ B_i1)
-  (C : Type ℓ')
-  {x : A i0}
-  {y : A i1}
-  {z : B i1}
-  {f : A i0 → C}
-  {g : A i1 → C}
-  {h : B i1 → C}
-  (p : PathP A x y)
-  (q : PathP (λ i → B i) y z)
-  (r : PathP (λ i → A i → C) f g)
-  (s : PathP (λ i → B i → C) g h)
-  →
-  congP (λ i a → compPathP r s i {!!}) (compPathP p q) ≡ compPathP (congP {!!} p) (congP {!!} q)
-congP-compPathP = {!!}
-
-
--}
-
 J2Dep : {ℓ ℓ' ℓ'' ℓ''' : Level}
     {A : Type ℓ}
     {B : A → Type ℓ'}
-    {C : A → Type ℓ''}
+    {C : (a : A) → B a → Type ℓ''}
     {x : A}
     {b : B x}
-    {c : C x}
-    (P : (y : A) (p : x ≡ y) (z : B y) (q : PathP (λ i → B (p i)) b z) (u : C y) (r : PathP (λ i → C (p i)) c u) → Type ℓ''')
+    {c : C x b}
+    (P : (y : A) (p : x ≡ y) (z : B y) (q : PathP (λ i → B (p i)) b z) (u : C y z) (r : PathP (λ i → C (p i) (q i)) c u) → Type ℓ''')
     (d : P _ refl _ refl _ refl)
-    {y : A} (p : x ≡ y) {z : B y} (q : PathP (λ i → B (p i)) b z) {u : C y} (r : PathP (λ i → C (p i)) c u) → P _ p _ q _ r
+    {y : A} (p : x ≡ y) {z : B y} (q : PathP (λ i → B (p i)) b z) {u : C y z} (r : PathP (λ i → C (p i) (q i)) c u) → P _ p _ q _ r
 J2Dep {A = A} {x = x} P d p q r = transport (λ i → P _ _ _ (λ j → q (i ∧ j)) _ (λ j → r (i ∧ j))) d
 
 
@@ -96,7 +68,7 @@ congP-compPathP' :
   congP {B = λ _ _ → C} (λ i → compPathP' {B = λ a → B a → C} {p = p} {q = q} R S i) (compPathP' {B = B} {p = p} {q = q} P Q)
   ≡ compPathP' {p = p} {q = q} (congP (λ i → R i) P) (congP (λ i → S i) Q)
 congP-compPathP' {A = A} {B = B} {C = C} x y p x' y' P z q z' Q f g h R S =
-  J2Dep {B = B} {C = λ a → B a → C} (λ y p y' P g R →
+  J2Dep {B = B} {C = λ a _ → B a → C} (λ y p y' P g R →
     (z : A)
     (q : y ≡ z)
     (z' : B z)
@@ -108,7 +80,7 @@ congP-compPathP' {A = A} {B = B} {C = C} x y p x' y' P z q z' Q f g h R S =
     ≡ compPathP' {p = p} {q = q} (congP (λ i → R i) P) (congP (λ i → S i) Q)
   )
   (λ z q z' Q h S →
-    J2Dep {B = B} {C = λ a → B a → C} (λ z q z' Q h S →
+    J2Dep {B = B} {C = λ a _ → B a → C} (λ z q z' Q h S →
       congP {B = λ _ _ → C} (λ i → compPathP' {B = λ a → B a → C} {p = refl} {q = q} refl S i) (compPathP' {B = B} {p = refl} {q = q} refl Q)
       ≡ compPathP' {p = refl} {q = q} refl (congP (λ i → S i) Q)
     ) (lemma₁ ∙ lemma₂) q Q S
@@ -130,3 +102,42 @@ congP-compPathP' {A = A} {B = B} {C = C} x y p x' y' P z q z' Q f g h R S =
 
   lemma₂ : refl ≡ compPathP' {B = λ _ → C} {p = refl {x = x'}} {q = refl {x = x'}} (refl {x = f x'}) refl
   lemma₂ = rUnitP' (λ _ → C) {p = refl {x = x'}} refl
+
+
+∘-∥-∥ₕ-3-elim :
+  ∀ {ℓ ℓ' ℓ'' ℓ'''}
+  {A : Type ℓ}
+  {B : ∥ A ∥ 3 → Type ℓ'}
+  {C : Type ℓ''}
+  {D : ∥ C ∥ 3 → Type ℓ'''}
+  {p : (x : ∥ A ∥ 3) → isOfHLevel 3 (B x → ∥ C ∥ 3)}
+  {q : (x : ∥ C ∥ 3) → isOfHLevel 3 (D x)}
+  (f : (c : C) → D ∣ c ∣ₕ)
+  (g : (a' : A) (b' : B ∣ a' ∣ₕ) → C)
+  (a : ∥ A ∥ 3)
+  (b : B a)
+  →
+  ∥-∥ₕ-elim {B = λ c → D c} q f (∥-∥ₕ-elim {B = λ a → B a → ∥ C ∥ 3} p (λ a' b' → ∣ g a' b' ∣ₕ) a b)
+  ≡ ∥-∥ₕ-elim {B = λ a → (b : B a) → D (∥-∥ₕ-elim {B = λ a → B a → ∥ C ∥ 3} p (λ a' b' → ∣ g a' b' ∣ₕ) a b)} (λ a → isOfHLevelΠ 3 (λ b → q _)) (λ a' b' → f (g a' b')) a b
+∘-∥-∥ₕ-3-elim {q = q} f g = ∥-∥ₕ-elim (λ a → isOfHLevelΠ 3 (λ b → isSet→isGroupoid (q _ _ _))) λ _ _ → refl
+
+∥-∥ₕ-elim-cong :
+  {A C D : Type}
+  {B : ∥ A ∥ 3 → Type}
+  (f : C → D)
+  (h k : (a : ∥ A ∥ 3) → B a → C)
+  (g : (a : A) → (b : B ∣ a ∣) → (h ∣ a ∣ b) ≡ (k ∣ a ∣ b))
+  (a : ∥ A ∥ 3)
+  (b : B a)
+  {p : (x : ∥ A ∥ 3) → isGroupoid ((b : B x) → h x b ≡ k x b)}
+  {q : (x : ∥ A ∥ 3) → isGroupoid ((b : B x) → f (h x b) ≡ f (k x b))}
+  {r : isGroupoid D}
+  →
+  cong f (∥-∥ₕ-elim {B = λ x → (b : B x) → h x b ≡ k x b} p g a b)
+  ≡ ∥-∥ₕ-elim {B = λ a → (b : B a) → f (h a b) ≡ f (k a b)} q (λ a b → cong f (g a b)) a b
+∥-∥ₕ-elim-cong {B = B} f h k g a b {p = p} {q = q} {r = r} = ∥-∥ₕ-elim
+  {B = λ a → (b : B a) →
+    cong f (∥-∥ₕ-elim {B = λ x → (b : B x) → h x b ≡ k x b} p g a b)
+    ≡ ∥-∥ₕ-elim {B = λ a → (b : B a) → f (h a b) ≡ f (k a b)} q (λ a b → cong f (g a b)) a b
+  }
+  (λ a → isGroupoidΠ λ b → isOfHLevelPath 3 (isOfHLevelPath 3 r (f (h a b)) (f (k a b))) _ _) (λ _ _ → refl) a b
