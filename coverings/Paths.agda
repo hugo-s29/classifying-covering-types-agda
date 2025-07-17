@@ -141,3 +141,85 @@ congP-compPathP' {A = A} {B = B} {C = C} x y p x' y' P z q z' Q f g h R S =
     ≡ ∥-∥ₕ-elim {B = λ a → (b : B a) → f (h a b) ≡ f (k a b)} q (λ a b → cong f (g a b)) a b
   }
   (λ a → isGroupoidΠ λ b → isOfHLevelPath 3 (isOfHLevelPath 3 r (f (h a b)) (f (k a b))) _ _) (λ _ _ → refl) a b
+
+
+{- An alternative of funTypeTransp (Cubical/Foundations/Transport.agda) -}
+{- Not sure if that's useful... -}
+transport-fun' :
+  {A B C : Type}
+  (p : A ≡ B)
+  (f : A → C)
+  (g : B → C)
+  →
+  PathP (λ i → p i → C) f g ≅ ((a : A) → f a ≡ g (transport p a))
+transport-fun' {A = A} {C = C} = J (λ B p →
+    (f : A → C)
+    (g : B → C)
+    →
+    PathP (λ i → p i → C) f g ≅ ((a : A) → f a ≡ g (transport p a))
+  ) lemma where
+
+  lemma : (f g : A → C) → (f ≡ g) ≅ ((a : A) → f a ≡ g (transport refl a))
+  lemma f g ._≅_.fun f≡g a = funExt⁻ f≡g a ∙ cong g (transportRefl a) ⁻¹
+  lemma f g ._≅_.inv f≡g-tr = funExt (λ a → f≡g-tr a ∙ cong g (transportRefl a))
+  lemma f g ._≅_.rightInv f≡g-tr = funExt (λ a → assoc _ _ _ ⁻¹ ∙ cong (f≡g-tr a ∙_) (rCancel _) ∙ rUnit _ ⁻¹)
+  lemma f g ._≅_.leftInv f≡g =
+      funExt (λ a → (funExt⁻ f≡g a ∙ cong g (transportRefl a) ⁻¹) ∙ cong g (transportRefl a))
+    ≡⟨ cong funExt (funExt (λ a → assoc _ _ _ ⁻¹)) ⟩
+      funExt (λ a → funExt⁻ f≡g a ∙ cong g (transportRefl a) ⁻¹ ∙ cong g (transportRefl a))
+    ≡⟨ cong (λ x → funExt (λ a → funExt⁻ f≡g a ∙ x a)) (funExt (λ a → lCancel _)) ⟩
+      funExt (λ a → funExt⁻ f≡g a ∙ refl)
+    ≡⟨ cong funExt (funExt λ a → rUnit _ ⁻¹) ⟩
+      f≡g
+      ∎
+
+sym-conc :
+  {A : Type}
+  {x y z : A}
+  (p : x ≡ y)
+  (q : y ≡ z)
+  →
+  (p ∙ q) ⁻¹ ≡ q ⁻¹ ∙ p ⁻¹
+sym-conc p = J (λ _ q → (p ∙ q) ⁻¹ ≡ q ⁻¹ ∙ p ⁻¹) (
+    (p ∙ refl) ⁻¹
+  ≡⟨ cong _⁻¹ (rUnit p ⁻¹) ⟩
+    p ⁻¹
+  ≡⟨ lUnit (p ⁻¹) ⟩
+    refl ∙ p ⁻¹ ∎
+  )
+
+
+
+lemma :
+  {A B : Type}
+  (f : A → B) (x y : A) (p : x ≡ y) →
+  congP (λ i u → transportRefl (f u) i) p ≡ transportRefl (f x) ∙ cong f p
+lemma f x _ = J (λ _ p →
+    congP (λ i u → transportRefl (f u) i) p
+    ≡ transportRefl (f x) ∙ cong f p
+  ) (rUnit (transportRefl (f x)))
+
+congP-funTypeTransp :
+  {A B C : Type}
+  (f : A → C)
+  (x : A)
+  (p : A ≡ B)
+  →
+  congP (λ i a → funTypeTransp (λ X → X) (λ _ → C) p f i a) (transport-filler p x)
+  ≡ cong f (transport⁻Transport p x) ⁻¹ ∙ transportRefl (f (transport⁻ p (transport p x))) ⁻¹
+congP-funTypeTransp {A = A} {C = C} f x = J (λ _ p →
+  congP (λ i a → funTypeTransp (λ X → X) (λ _ → C) p f i a) (transport-filler p x)
+  ≡ cong f (transport⁻Transport p x) ⁻¹ ∙ transportRefl (f (transport⁻ p (transport p x))) ⁻¹)
+  (
+      congP (λ i a → funTypeTransp (λ X → X) (λ _ → C) refl f i a) (transport-filler refl x)
+    ≡⟨⟩
+      congP (λ i a → transportRefl (f (transportRefl a i)) i) (transportRefl x) ⁻¹
+    ≡⟨⟩
+      (λ i → transportRefl (f (transportRefl (transportRefl x i) i)) i) ⁻¹
+    ≡⟨ cong _⁻¹ (lemma f (transport⁻ refl (transport refl x)) x (λ i → transportRefl (transportRefl x i) i)) ⟩
+      (transportRefl (f (transport⁻ refl (transport refl x))) ∙ (λ i → f (transportRefl (transportRefl x i) i))) ⁻¹
+    ≡⟨ sym-conc _ _ ⟩
+      (λ i → f (transportRefl (transportRefl x i) i)) ⁻¹ ∙ transportRefl (f (transport⁻ refl (transport refl x))) ⁻¹
+    ≡⟨⟩
+      cong f (transport⁻Transport refl x) ⁻¹ ∙ transportRefl (f (transport⁻ refl (transport refl x))) ⁻¹ ∎
+  )

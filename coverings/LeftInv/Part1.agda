@@ -26,8 +26,6 @@ open import UniversalCovering
 module LeftInv.Part1 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib) : SubGroupπ₁' A) where
   open import LeftInv.Base A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
 
-  congP1 : congP (λ i → Bi≡Bi∘s i) ptBG≡∣x∣' ≡ cong Bi (s∘t (pt BG)) ⁻¹
-  congP1 =
-      congP (λ i → Bi≡Bi∘s i) ptBG≡∣x∣'
-    ≡⟨ {!!} ⟩
-      cong Bi (s∘t (pt BG)) ⁻¹ ∎
+  congP1 : congP (λ i → Bi≡tr∘Bi∘tr i) (transport-filler ⟨BG⟩≡∥X∥ (pt BG)) ≡
+    cong Bi (transport⁻Transport ⟨BG⟩≡∥X∥ (pt BG)) ⁻¹ ∙ transportRefl (Bi (transport⁻ ⟨BG⟩≡∥X∥ (transport ⟨BG⟩≡∥X∥ (pt BG)))) ⁻¹
+  congP1 = congP-funTypeTransp Bi (pt BG) ⟨BG⟩≡∥X∥

@@ -64,11 +64,26 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
   Bi∘s≡∥p∥ : Bi ∘ s ≡ ∥p∥
   Bi∘s≡∥p∥ = funExt (∥-∥ₕ-elim {B = λ x → Bi (s x) ≡ ∥p∥ x} (λ x → isOfHLevelTruncPath {y = ∥p∥ x}) (λ (_ , _ , q) → q))
 
-  Bi∘tr≡Bi∘s : (x : ∥ pullbackΣ Bi ∣_∣ ∥ 3) → transport refl (Bi (transport⁻ ⟨BG⟩≡∥X∥ x)) ≡ Bi (s x)
-  Bi∘tr≡Bi∘s x = transportRefl _ ∙ cong Bi (transportIsoToPath⁻ ⟨BG⟩≅∥X∥ x)
+  Bi≡tr∘Bi∘tr : PathP (λ i → ⟨BG⟩≡∥X∥ i → ∥ ⟨ A ⟩ ∥ 3) Bi (transport refl ∘ Bi ∘ transport⁻ ⟨BG⟩≡∥X∥)
+  Bi≡tr∘Bi∘tr = funTypeTransp (λ X → X) (λ _ → ∥ ⟨ A ⟩ ∥ 3) ⟨BG⟩≡∥X∥ Bi
+
+  tr∘Bi∘tr≡Bi∘s : transport refl ∘ Bi ∘ transport⁻ ⟨BG⟩≡∥X∥ ≡ Bi ∘ s
+  tr∘Bi∘tr≡Bi∘s = funExt (λ x → transportRefl (Bi (transport⁻ ⟨BG⟩≡∥X∥ x)) ∙ cong Bi (transportIsoToPath⁻ ⟨BG⟩≅∥X∥ x))
+
+  Bi≡Bi∘s∙ : PathP (λ i → (⟨BG⟩≡∥X∥ ∙ refl) i → ∥ ⟨ A ⟩ ∥ 3) Bi (Bi ∘ s)
+  Bi≡Bi∘s∙ = compPathP'
+    {A = Type}
+    {B = λ X → X → ∥ ⟨ A ⟩ ∥ 3}
+    {x' = Bi}
+    {y' = transport refl ∘ Bi ∘ (transport⁻ ⟨BG⟩≡∥X∥)}
+    {z' = Bi ∘ s}
+    {p = ⟨BG⟩≡∥X∥}
+    {q = refl}
+    Bi≡tr∘Bi∘tr
+    tr∘Bi∘tr≡Bi∘s
 
   Bi≡Bi∘s : PathP (λ i → ⟨BG⟩≡∥X∥ i → ∥ ⟨ A ⟩ ∥ 3) Bi (Bi ∘ s)
-  Bi≡Bi∘s = subst (PathP (λ i → ⟨BG⟩≡∥X∥ i → ∥ ⟨ A ⟩ ∥ 3) Bi) (funExt Bi∘tr≡Bi∘s) (funTypeTransp (λ X → X) (λ _ → ∥ ⟨ A ⟩ ∥ 3) ⟨BG⟩≡∥X∥ Bi)
+  Bi≡Bi∘s = subst (λ x → PathP (λ i → x i → ∥ ⟨ A ⟩ ∥ 3) Bi (Bi ∘ s)) (rUnit ⟨BG⟩≡∥X∥ ⁻¹) Bi≡Bi∘s∙
 
   Bi≡∥p∥∙ : PathP (λ i → (⟨BG⟩≡∥X∥ ∙ refl) i → ∥ ⟨ A ⟩ ∥ 3) Bi ∥p∥
   Bi≡∥p∥∙ = compPathP' {A = Type} {B = λ X → X → ∥ ⟨ A ⟩ ∥ 3}
@@ -89,6 +104,19 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
 
   ∣x∣' : ∥ pullbackΣ Bi ∣_∣ ∥ 3
   ∣x∣' = ∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) (Bi (pt BG)) refl
+
+  ptBG≡∣x∣'∙ : PathP (λ i → (⟨BG⟩≡∥X∥ ∙ refl) i) (pt BG) ∣x∣'
+  ptBG≡∣x∣'∙ =
+    compPathP'
+    {A = Type}
+    {B = λ X → X}
+    {x' = pt BG}
+    {y' = transport ⟨BG⟩≡∥X∥ (pt BG)}
+    {z' = ∣x∣'}
+    {p = ⟨BG⟩≡∥X∥}
+    {q = refl}
+    (transport-filler ⟨BG⟩≡∥X∥ (pt BG))
+    (transportIsoToPath ⟨BG⟩≅∥X∥ (pt BG))
 
   ptBG≡∣x∣' : PathP (λ i → ⟨BG⟩≡∥X∥ i) (pt BG) ∣x∣'
   ptBG≡∣x∣' = toPathP (transportRefl ∣x∣')

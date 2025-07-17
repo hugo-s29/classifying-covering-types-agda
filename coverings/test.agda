@@ -19,6 +19,7 @@ open import Cubical.HITs.SetTruncation renaming (rec to ∥-∥₂-rec ; map to 
 open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; map2 to ∥-∥-map2 ; elim to ∥-∥-elim ; elim2 to ∥-∥-elim2 ; elim3 to ∥-∥-elim3)
 open import Cubical.Homotopy.Connected
 open import Cubical.WildCat.Base
+open import Paths
 
 {-
 congP-funTypeTransp : {ℓ ℓ' ℓ'' : Level} {A : Type ℓ} (B : A → Type ℓ')
@@ -67,39 +68,106 @@ magic A B {x = x} p q {u = u} P Q h = JDep
   lemma₃ = symP (rUnitP' B refl)
 
 
--}
 
 
-funTypeTransp-congP :
+transport-fun :
   {A B C : Type}
-  {x : A} {y : B}
   (p : A ≡ B)
-  (P : PathP (λ i → p i) x (transport p x))
   (f : A → C)
   (g : B → C)
-  (l : (y : B) → transport refl (f (transport⁻ p y)) ≡ g y)
   →
-  congP (λ i → subst (PathP (λ i → p i → C) f) (funExt l) (funTypeTransp (λ X → X) (λ _ → C) p f) i) P
-  ≡
-  cong f (transport⁻Transport p x) ⁻¹ ∙ transportRefl _ ⁻¹ ∙ l (transport p x)
-funTypeTransp-congP {A = A} {C = C} {x = x} p P = {!!}
+  (subst (λ X → X → C) p f ≡ g) ≅ ((a : A) → f a ≡ g (transport p a))
+transport-fun {A = A} {C = C} = J (λ B p →
+    (f : A → C) (g : B → C) → (subst (λ X → X → C) p f ≡ g) ≅ ((a : A) → f a ≡ g (transport p a))
+  ) lemma where
 
-{- JDep (λ B p y P →
-    (q : transport p x ≡ y)
-    (f : A → C)
-    (g : B → C)
-    (l : (y : B) → transport refl (f (transport⁻ p y)) ≡ g y)
-    →
-    congP (λ i → subst (PathP (λ i → p i → C) f) (funExt l) (funTypeTransp (λ X → X) (λ _ → C) p f) i) P
-    ≡
-    {!!}
-  ) (λ q f g l →
-      (λ i → subst (f ≡_) (funExt l) (funTypeTransp (λ X → X) (λ _ → C) refl f) i x)
+  lemma : (f g : A → C) →
+    (transport refl f ≡ g) ≅ ((a : A) → f a ≡ g (transport refl a))
+  lemma f g ._≅_.fun tr-f≡g a = funExt⁻ (transportRefl f ⁻¹ ∙ tr-f≡g) a ∙ cong g (transportRefl a) ⁻¹
+  lemma f g ._≅_.inv h = transportRefl f ∙ funExt λ a → h a ∙ cong g (transportRefl a)
+  lemma f g ._≅_.rightInv h = funExt (λ a →
+      funExt⁻ (transportRefl f ⁻¹ ∙ transportRefl f ∙ funExt (λ a₁ → h a₁ ∙ cong g (transportRefl a₁))) a ∙ cong g (transportRefl a) ⁻¹
+    ≡⟨ cong (λ x → funExt⁻ x a ∙ cong g (transportRefl a) ⁻¹) (assoc _ _ _ ∙ cong (_∙ funExt (λ a₁ → h a₁ ∙ cong g (transportRefl a₁))) (lCancel (transportRefl f)) ∙ lUnit (funExt (λ a₁ → h a₁ ∙ cong g (transportRefl a₁))) ⁻¹) ⟩
+      funExt⁻ (funExt (λ a₁ → h a₁ ∙ cong g (transportRefl a₁))) a ∙ cong g (transportRefl a) ⁻¹
     ≡⟨⟩
-      (λ i → subst (f ≡_) (funExt l) (λ i x → transport-filler refl (f (transport-filler refl x i)) i) i x)
-    ≡⟨ cong {B = λ r → f x ≡ g x} (λ r i → r i x) (substInPathsL (funExt l) (λ i x → transport-filler refl (f (transport-filler refl x i)) i)) ⟩
-      (λ i → ((λ i x → transport-filler refl (f (transport-filler refl x i)) i) ∙ (funExt l)) i x)
-    ≡⟨ {!!} ⟩
-      {!!} ∎
-  ) p P
+      (h a ∙ cong g (transportRefl a)) ∙ cong g (transportRefl a) ⁻¹
+    ≡⟨ assoc _ _ _ ⁻¹ ⟩
+      h a ∙ cong g (transportRefl a) ∙ cong g (transportRefl a) ⁻¹
+    ≡⟨ cong (h a ∙_) (rCancel (cong g (transportRefl a))) ⟩
+      h a ∙ refl
+    ≡⟨ rUnit (h a) ⁻¹ ⟩
+      h a ∎
+    )
+  lemma f g ._≅_.leftInv tr-f≡g =
+      transportRefl f ∙ funExt (λ a → (funExt⁻ (transportRefl f ⁻¹ ∙ tr-f≡g) a ∙ cong g (transportRefl a) ⁻¹) ∙ cong g (transportRefl a))
+    ≡⟨ cong (λ x → transportRefl f ∙ funExt (λ a → funExt⁻ x a)) (assoc _ _ _ ⁻¹) ⟩
+      transportRefl f ∙ funExt (λ a → (funExt⁻ (transportRefl f ⁻¹ ∙ tr-f≡g) a ∙ (cong g (transportRefl a) ⁻¹ ∙ cong g (transportRefl a))))
+    ≡⟨ cong (λ x → transportRefl f ∙ funExt (λ a → funExt⁻ ((transportRefl f ⁻¹ ∙ tr-f≡g) ∙ x) a)) (lCancel _) ⟩
+      transportRefl f ∙ funExt (λ a → (funExt⁻ (transportRefl f ⁻¹ ∙ tr-f≡g) a ∙ refl))
+    ≡⟨ cong (λ x → transportRefl f ∙ funExt (λ a → funExt⁻ x a)) (rUnit _ ⁻¹) ⟩
+      transportRefl f ∙ funExt (λ a → funExt⁻ (transportRefl f ⁻¹ ∙ tr-f≡g) a)
+    ≡⟨⟩
+      transportRefl f ∙ transportRefl f ⁻¹ ∙ tr-f≡g
+    ≡⟨ assoc _ _ _ ∙ cong (_∙ tr-f≡g) (rCancel (transportRefl f)) ∙ lUnit _ ⁻¹ ⟩
+      tr-f≡g ∎
+
+
+
 -}
+
+cong-concat :
+  {A : Type}
+  {B : Type}
+  (f : (a : A) → B)
+  {x y z : A}
+  (p : x ≡ y) (q : y ≡ z)
+  →
+  cong f (p ∙ q) ≡ cong f p ∙ cong f q
+cong-concat f p = J (λ _ q → cong f (p ∙ q) ≡ cong f p ∙ cong f q ) (cong (cong f) (rUnit p ⁻¹) ∙ rUnit (cong f p))
+
+
+magic :
+  {A : Type}
+  (x : A)
+  →
+  congP (λ i x → transportRefl x i) (transportRefl x) ≡ transportRefl _ ∙ transportRefl _
+magic x = {!!}
+
+test :
+  {A B C : Type}
+  (f : A → C)
+  (k : A ≅ B)
+  (a : A)
+  →
+  congP (λ i b → (transportRefl (f (transport⁻ (isoToPath k) b)) ∙ cong f (transportIsoToPath⁻ k b)) i) (transportIsoToPath k a)
+  ≡
+  transportRefl (f (transport⁻ (isoToPath k) (transport (isoToPath k) a)))
+  ∙ cong f (transport⁻Transport (isoToPath k) a ∙ _≅_.leftInv k a ⁻¹)
+test f k a =
+    congP (λ i b → (transportRefl (f (transport⁻ (isoToPath k) b)) ∙ cong f (transportIsoToPath⁻ k b)) i) (transportIsoToPath k a)
+  ≡⟨⟩
+    congP (λ i b → (transportRefl (f (_≅_.inv k (transport refl b))) ∙ cong f (cong (_≅_.inv k) (transportRefl b))) i) (transportRefl (_≅_.fun k a))
+  ≡⟨ {!!} ⟩ -- congP (p ∙ q) (r ∙ s) ≡ congP p r ∙ congP q s
+    congP (λ i b → (transportRefl (f (_≅_.inv k (transport refl b)))) i) refl ∙ congP (λ i b → cong f (cong (_≅_.inv k) (transportRefl b)) i) (transportRefl (_≅_.fun k a))
+  ≡⟨ cong (λ u → u ∙ congP (λ i b → cong f (cong (_≅_.inv k) (transportRefl b)) i) (transportRefl (_≅_.fun k a))) (lemma (λ b → f (_≅_.inv k (transport refl b))) (transport refl (_≅_.fun k a)) (transport refl (_≅_.fun k a)) refl ∙ rUnit _ ⁻¹) ⟩
+    transportRefl (f (_≅_.inv k (transport refl (transport refl (_≅_.fun k a))))) ∙ congP (λ i b → f ((_≅_.inv k) (transportRefl b i))) (transportRefl (_≅_.fun k a))
+  ≡⟨⟩
+    transportRefl (f (transport⁻ (isoToPath k) (transport (isoToPath k) a))) ∙ congP (λ i b → f ((_≅_.inv k) (transportRefl b i))) (transportRefl (_≅_.fun k a))
+  ≡⟨⟩
+    transportRefl (f (transport⁻ (isoToPath k) (transport (isoToPath k) a))) ∙ cong (f ∘ _≅_.inv k) (congP (λ i x → transportRefl x i) (transportRefl (_≅_.fun k a)))
+  ≡⟨ {!!} ⟩
+    transportRefl (f (transport⁻ (isoToPath k) (transport (isoToPath k) a))) ∙ cong (f ∘ _≅_.inv k) (transportRefl (transport refl (_≅_.fun k a)) ∙ transportRefl (_≅_.fun k a))
+  ≡⟨ {!!} ⟩
+    transportRefl (f (transport⁻ (isoToPath k) (transport (isoToPath k) a))) ∙ cong f (λ i → (transport⁻Transport (isoToPath k) a ∙ {!!}) i)
+  ≡⟨ {!!} ⟩
+    transportRefl (f (transport⁻ (isoToPath k) (transport (isoToPath k) a))) ∙ cong f (transport⁻Transport (isoToPath k) a ∙ _≅_.leftInv k a ⁻¹) ∎
+  where
+
+
+  lem : cong (_≅_.inv k) (transportRefl (transport refl (_≅_.fun k a)) ∙ transportRefl (_≅_.fun k a)) ≡ transport⁻Transport (isoToPath k) a ∙ _≅_.leftInv k a ⁻¹
+  lem =
+      cong (_≅_.inv k) (transportRefl (transport (isoToPath k) a) ∙ transportRefl (_≅_.fun k a))
+    ≡⟨ {!!} ⟩
+      {!!}
+    ≡⟨ {!!} ⟩
+      transport⁻Transport (isoToPath k) a ∙ _≅_.leftInv k a ⁻¹ ∎
