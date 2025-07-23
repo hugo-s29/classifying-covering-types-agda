@@ -21,9 +21,9 @@ open import Cubical.WildCat.Base
 open import Base
 open import Pullback
 open import Paths
-open import UniversalCovering
+import UniversalCovering
 
-module Subgroup→PCCovering₀ (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' ⟨ A∙ ⟩ )
+module SubgroupToCovering (A∙ BG∙ : Pointed ℓ-zero) (hyp-conA : isConnected' ⟨ A∙ ⟩ )
   (hyp-conBG : isConnected' ⟨ BG∙ ⟩) (Bi∙ : BG∙ B↪∙ (∥ A∙ ∥∙ 3)) where
 
   A = ⟨ A∙ ⟩

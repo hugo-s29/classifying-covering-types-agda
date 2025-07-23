@@ -3,6 +3,7 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.BiInvertible
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.HLevels
@@ -55,8 +56,18 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
   ⟨BG⟩≅∥X∥ : ⟨ BG ⟩ ≅ (∥ pullbackΣ Bi ∣_∣ ∥ 3)
   ⟨BG⟩≅∥X∥ = iso t s t∘s s∘t
 
+  ⟨BG⟩≃ᵇⁱ∥X∥ : BiInvEquiv ⟨ BG ⟩ (∥ pullbackΣ Bi ∣_∣ ∥ 3)
+  ⟨BG⟩≃ᵇⁱ∥X∥ .BiInvEquiv.fun = t
+  ⟨BG⟩≃ᵇⁱ∥X∥ .BiInvEquiv.invr = s
+  ⟨BG⟩≃ᵇⁱ∥X∥ .BiInvEquiv.invr-rightInv = t∘s
+  ⟨BG⟩≃ᵇⁱ∥X∥ .BiInvEquiv.invl = s
+  ⟨BG⟩≃ᵇⁱ∥X∥ .BiInvEquiv.invl-leftInv = s∘t
+
+  ⟨BG⟩≃∥X∥ : ⟨ BG ⟩ ≃ (∥ pullbackΣ Bi ∣_∣ ∥ 3)
+  ⟨BG⟩≃∥X∥ = biInvEquiv→Equiv-right ⟨BG⟩≃ᵇⁱ∥X∥
+
   ⟨BG⟩≡∥X∥ : ⟨ BG ⟩ ≡ ∥ pullbackΣ Bi ∣_∣ ∥ 3
-  ⟨BG⟩≡∥X∥ = isoToPath ⟨BG⟩≅∥X∥
+  ⟨BG⟩≡∥X∥ = ua ⟨BG⟩≃∥X∥
 
   ∥p∥ : ∥ pullbackΣ Bi ∣_∣ ∥ 3 → ∥ ⟨ A ⟩ ∥ 3
   ∥p∥ = ∥-∥ₕ-map (λ x → x .snd .fst)

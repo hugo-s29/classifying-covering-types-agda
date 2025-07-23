@@ -190,11 +190,11 @@ sym-conc p = J (λ _ q → (p ∙ q) ⁻¹ ≡ q ⁻¹ ∙ p ⁻¹) (
 
 
 
-lemma :
+congPTransportRefl :
   {A B : Type}
   (f : A → B) (x y : A) (p : x ≡ y) →
   congP (λ i u → transportRefl (f u) i) p ≡ transportRefl (f x) ∙ cong f p
-lemma f x _ = J (λ _ p →
+congPTransportRefl f x _ = J (λ _ p →
     congP (λ i u → transportRefl (f u) i) p
     ≡ transportRefl (f x) ∙ cong f p
   ) (rUnit (transportRefl (f x)))
@@ -216,7 +216,7 @@ congP-funTypeTransp {A = A} {C = C} f x = J (λ _ p →
       congP (λ i a → transportRefl (f (transportRefl a i)) i) (transportRefl x) ⁻¹
     ≡⟨⟩
       (λ i → transportRefl (f (transportRefl (transportRefl x i) i)) i) ⁻¹
-    ≡⟨ cong _⁻¹ (lemma f (transport⁻ refl (transport refl x)) x (λ i → transportRefl (transportRefl x i) i)) ⟩
+    ≡⟨ cong _⁻¹ (congPTransportRefl f (transport⁻ refl (transport refl x)) x (λ i → transportRefl (transportRefl x i) i)) ⟩
       (transportRefl (f (transport⁻ refl (transport refl x))) ∙ (λ i → f (transportRefl (transportRefl x i) i))) ⁻¹
     ≡⟨ sym-conc _ _ ⟩
       (λ i → f (transportRefl (transportRefl x i) i)) ⁻¹ ∙ transportRefl (f (transport⁻ refl (transport refl x))) ⁻¹

@@ -20,10 +20,8 @@ open import Cubical.Homotopy.Connected
 open import Cubical.WildCat.Base
 open import Base
 open import Pullback
-open import Paths
-open import UniversalCovering
 
-module PCCovering₀→Subgroup (A∙ : Pointed ℓ-zero) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A∙) where
+module CoveringToSubgroup (A∙ : Pointed ℓ-zero) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A∙) where
   A : Type
   A = ⟨ A∙ ⟩
 
