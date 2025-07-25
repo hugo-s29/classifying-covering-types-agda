@@ -3,6 +3,7 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.BiInvertible
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.HLevels
@@ -143,36 +144,6 @@ congP-compPathP' {A = A} {B = B} {C = C} x y p x' y' P z q z' Q f g h R S =
   (λ a → isGroupoidΠ λ b → isOfHLevelPath 3 (isOfHLevelPath 3 r (f (h a b)) (f (k a b))) _ _) (λ _ _ → refl) a b
 
 
-{- An alternative of funTypeTransp (Cubical/Foundations/Transport.agda) -}
-{- Not sure if that's useful... -}
-transport-fun' :
-  {A B C : Type}
-  (p : A ≡ B)
-  (f : A → C)
-  (g : B → C)
-  →
-  PathP (λ i → p i → C) f g ≅ ((a : A) → f a ≡ g (transport p a))
-transport-fun' {A = A} {C = C} = J (λ B p →
-    (f : A → C)
-    (g : B → C)
-    →
-    PathP (λ i → p i → C) f g ≅ ((a : A) → f a ≡ g (transport p a))
-  ) lemma where
-
-  lemma : (f g : A → C) → (f ≡ g) ≅ ((a : A) → f a ≡ g (transport refl a))
-  lemma f g ._≅_.fun f≡g a = funExt⁻ f≡g a ∙ cong g (transportRefl a) ⁻¹
-  lemma f g ._≅_.inv f≡g-tr = funExt (λ a → f≡g-tr a ∙ cong g (transportRefl a))
-  lemma f g ._≅_.rightInv f≡g-tr = funExt (λ a → assoc _ _ _ ⁻¹ ∙ cong (f≡g-tr a ∙_) (rCancel _) ∙ rUnit _ ⁻¹)
-  lemma f g ._≅_.leftInv f≡g =
-      funExt (λ a → (funExt⁻ f≡g a ∙ cong g (transportRefl a) ⁻¹) ∙ cong g (transportRefl a))
-    ≡⟨ cong funExt (funExt (λ a → assoc _ _ _ ⁻¹)) ⟩
-      funExt (λ a → funExt⁻ f≡g a ∙ cong g (transportRefl a) ⁻¹ ∙ cong g (transportRefl a))
-    ≡⟨ cong (λ x → funExt (λ a → funExt⁻ f≡g a ∙ x a)) (funExt (λ a → lCancel _)) ⟩
-      funExt (λ a → funExt⁻ f≡g a ∙ refl)
-    ≡⟨ cong funExt (funExt λ a → rUnit _ ⁻¹) ⟩
-      f≡g
-      ∎
-
 sym-conc :
   {A : Type}
   {x y z : A}
@@ -187,8 +158,6 @@ sym-conc p = J (λ _ q → (p ∙ q) ⁻¹ ≡ q ⁻¹ ∙ p ⁻¹) (
   ≡⟨ lUnit (p ⁻¹) ⟩
     refl ∙ p ⁻¹ ∎
   )
-
-
 
 congPTransportRefl :
   {A B : Type}
@@ -223,3 +192,154 @@ congP-funTypeTransp {A = A} {C = C} f x = J (λ _ p →
     ≡⟨⟩
       cong f (transport⁻Transport refl x) ⁻¹ ∙ transportRefl (f (transport⁻ refl (transport refl x))) ⁻¹ ∎
   )
+
+private
+  {- This was taken from the Cubical Library (Foundations/Isomorphism.agda) -}
+  module Iso→Equiv (A B : Type) (f : A → B) (g : B → A) (s : section f g) (t : retract f g) (y : B) (x0 x1 : A) (p0 : f x0 ≡ y) (p1 : f x1 ≡ y) where
+    fill0 : I → I → A
+    fill0 i = hfill (λ k → λ { (i = i1) → t x0 k
+                              ; (i = i0) → g y })
+                    (inS (g (p0 (~ i))))
+
+    fill1 : I → I → A
+    fill1 i = hfill (λ k → λ { (i = i1) → t x1 k
+                              ; (i = i0) → g y })
+                    (inS (g (p1 (~ i))))
+
+    fill2 : I → I → A
+    fill2 i = hfill (λ k → λ { (i = i1) → fill1 k i1
+                              ; (i = i0) → fill0 k i1 })
+                    (inS (g y))
+
+    p : x0 ≡ x1
+    p i = fill2 i i1
+
+module _ {A B : Type} (f : A → B) (g : B → A) (rinv : section f g) (linv : retract f g) (h : (b : B) → cong g (rinv b) ≡ linv (g b)) (a : A) where
+  private
+    biinv : BiInvEquiv A B
+    biinv .BiInvEquiv.fun = f
+    biinv .BiInvEquiv.invr = g
+    biinv .BiInvEquiv.invr-rightInv = rinv
+    biinv .BiInvEquiv.invl = g
+    biinv .BiInvEquiv.invl-leftInv = linv
+
+    A≃B : A ≃ B
+    A≃B = biInvEquiv→Equiv-left biinv
+
+    rinv' : (b : B) → f (g b) ≡ b
+    rinv' = BiInvEquiv.invl-rightInv biinv
+
+    open Iso→Equiv A B f g rinv' linv (f a) (g (f a)) a (rinv' (f a)) refl
+
+    top-fill1 : (λ i → fill1 i i1) ≡ linv a
+    top-fill1 = lUnit (linv a) ⁻¹
+
+    rinv'≡rinv : rinv' ≡ rinv
+    rinv'≡rinv = funExt(λ b →
+        cong f (linv (g b) ⁻¹ ∙ cong g (rinv b) ∙ refl) ⁻¹ ∙ rinv b
+      ≡⟨ cong (λ u → cong f (linv (g b) ⁻¹ ∙ u) ⁻¹ ∙ rinv b) (rUnit _ ⁻¹) ⟩
+        cong f (linv (g b) ⁻¹ ∙ cong g (rinv b)) ⁻¹ ∙ rinv b
+      ≡⟨ cong (λ u → cong f (linv (g b) ⁻¹ ∙ u) ⁻¹ ∙ rinv b) (h b) ⟩
+        cong f (linv (g b) ⁻¹ ∙ linv (g b)) ⁻¹ ∙ rinv b
+      ≡⟨ cong (λ u → cong f u ⁻¹ ∙ rinv b) (lCancel (linv (g b))) ⟩
+        cong f refl ⁻¹ ∙ rinv b
+      ≡⟨ lUnit _ ⁻¹ ⟩
+        rinv b ∎)
+
+    h' : (b : B) → cong g (rinv' b) ≡ linv (g b)
+    h' b = subst⁻ (λ u → cong g (u b) ≡ linv (g b)) rinv'≡rinv (h b)
+
+    top-fill0 : (λ i → fill0 i i1) ≡ refl
+    top-fill0 =
+      cong g (rinv' (f a)) ⁻¹ ∙ linv (g (f a))
+      ≡⟨ cong (cong g (rinv' (f a)) ⁻¹ ∙_) (h' (f a)) ⁻¹ ⟩
+      cong g (rinv' (f a)) ⁻¹ ∙ cong g (rinv' (f a))
+      ≡⟨ lCancel _ ⟩
+      refl ∎
+
+    p≡linv : p ≡ linv a
+    p≡linv =
+        ((λ i → fill0 i i1) ⁻¹ ∙∙ refl ∙∙ (λ i → fill1 i i1))
+      ≡⟨ cong₂ (λ u v → _∙∙_∙∙_ {w = a} (u ⁻¹) refl v) top-fill0 top-fill1 ⟩
+        (refl ∙∙ refl ∙∙ linv a)
+      ≡⟨ lUnit _ ⁻¹ ⟩
+        linv a ∎
+
+  retEq≡linv : retEq A≃B a ≡ linv a
+  retEq≡linv = p≡linv
+
+postulate
+  -- this seems reasonable
+  tr⁻Tr-uaId : {A : Type} (a : A) → transport⁻Transport (ua (idEquiv A)) a ≡ transport⁻Transport refl a
+
+ua-tr⁻Tr : {A B : Type} (A≃B : A ≃ B) (a : A) → congP (λ i b → ~uaβ A≃B b i) (uaβ A≃B a) ≡ transport⁻Transport (ua A≃B) a ∙ retEq A≃B a ⁻¹
+ua-tr⁻Tr {B = B} = EquivJ (λ A A≃B → (a : A) → congP (λ i b → ~uaβ A≃B b i) (uaβ A≃B a) ≡ transport⁻Transport (ua A≃B) a ∙ retEq A≃B a ⁻¹) (λ b →
+      congP (λ i x → transportRefl x i) (transportRefl b)
+    ≡⟨⟩
+      transport⁻Transport refl b
+    ≡⟨ tr⁻Tr-uaId b ⁻¹ ⟩
+      transport⁻Transport (ua (idEquiv B)) b
+    ≡⟨ rUnit _ ⟩
+      transport⁻Transport (ua (idEquiv B)) b ∙ refl ∎
+  )
+
+
+congP∙ :
+  {A B : Type}
+  {f g h : A → B}
+  {x y z : A}
+  (p : f ≡ g)
+  (q : g ≡ h)
+  (r : x ≡ y)
+  (s : y ≡ z)
+  →
+  congP (λ i → (p ∙ q) i) (r ∙ s)
+  ≡ congP (λ i → p i) r ∙ congP (λ i → q i) s
+congP∙ {x = x} {y = y} p q r = J2 (λ _ q _ s →
+  congP (λ i → (p ∙ q) i) (r ∙ s) ≡ congP (λ i → p i) r ∙ congP (λ i → q i) s) (
+    congP (λ i → (p ∙ refl) i) (r ∙ refl)
+  ≡⟨ cong₂ (λ u v → congP (λ i → u i) {x = x} {y = y} v) (rUnit p) (rUnit r) ⁻¹ ⟩
+    congP (λ i → p i) r
+  ≡⟨ rUnit _ ⟩
+    congP (λ i → p i) r ∙ refl ∎
+  ) q
+
+cong∙ :
+  {A B : Type}
+  (f : A → B)
+  {x y z : A}
+  (p : x ≡ y)
+  (q : y ≡ z)
+  →
+  cong f (p ∙ q)
+  ≡ cong f p ∙ cong f q
+cong∙ f p = J (λ _ q → cong f (p ∙ q) ≡ cong f p ∙ cong f q) (
+    cong f (p ∙ refl)
+  ≡⟨ cong (cong f) (rUnit p) ⁻¹ ⟩
+    cong f p
+  ≡⟨ rUnit (cong f p) ⟩
+    cong f p ∙ refl ∎)
+
+congP-subst-rUnit :
+  {A B C : Type}
+  {f : A → C}
+  {g : B → C}
+  {a : A}
+  {b : B}
+  (p : A ≡ B)
+  (P : PathP (λ i → (p ∙ refl) i → C) f g)
+  (Q : PathP (λ i → (p ∙ refl) i) a b)
+  →
+  congP (λ i → subst⁻ (λ u → PathP (λ i → u i → C) f g) (rUnit p) P i) (subst⁻ (λ u → PathP (λ i → u i) a b) (rUnit p) Q) ≡ congP (λ i → P i) Q
+congP-subst-rUnit {A = A} {B = B} {C = C} {f = f} {g = g} {a = a} {b = b} p P Q = J (λ p rup →
+          (P : PathP (λ i → p i → C) f g)
+          (Q : PathP (λ i → p i) a b)
+          →
+          congP (λ i → subst⁻ {A = A ≡ B} (λ u → PathP (λ i → u i → C) f g) rup P i) (subst⁻ {A = A ≡ B} (λ u → PathP (λ i → u i) a b) rup Q) ≡ congP (λ i → P i) Q
+      ) (λ P Q →
+          (λ i → subst⁻ {A = A ≡ B} (λ u → PathP (λ i₁ → u i₁ → C) f g) refl P i (subst⁻ {A = A ≡ B} (λ u → PathP (λ i₁ → u i₁) a b) refl Q i))
+      ≡⟨ cong {B = λ _ → f a ≡ g b} (λ u i → subst⁻ {A = A ≡ B} (λ u → PathP (λ i₁ → u i₁ → C) f g) refl P i (u i)) (transportRefl Q) ⟩
+          (λ i → subst⁻ {A = A ≡ B} (λ u → PathP (λ i₁ → u i₁ → C) f g) (refl {x = p}) P i (Q i))
+      ≡⟨ cong {B = λ _ → f a ≡ g b} (λ u i → u i (Q i)) (transportRefl P) ⟩
+          congP (λ i → P i) Q ∎
+      ) (rUnit p) P Q

@@ -64,7 +64,7 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
   ⟨BG⟩≃ᵇⁱ∥X∥ .BiInvEquiv.invl-leftInv = s∘t
 
   ⟨BG⟩≃∥X∥ : ⟨ BG ⟩ ≃ (∥ pullbackΣ Bi ∣_∣ ∥ 3)
-  ⟨BG⟩≃∥X∥ = biInvEquiv→Equiv-right ⟨BG⟩≃ᵇⁱ∥X∥
+  ⟨BG⟩≃∥X∥ = biInvEquiv→Equiv-left ⟨BG⟩≃ᵇⁱ∥X∥
 
   ⟨BG⟩≡∥X∥ : ⟨ BG ⟩ ≡ ∥ pullbackΣ Bi ∣_∣ ∥ 3
   ⟨BG⟩≡∥X∥ = ua ⟨BG⟩≃∥X∥
@@ -79,7 +79,7 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
   Bi≡tr∘Bi∘tr = funTypeTransp (λ X → X) (λ _ → ∥ ⟨ A ⟩ ∥ 3) ⟨BG⟩≡∥X∥ Bi
 
   tr∘Bi∘tr≡Bi∘s : transport refl ∘ Bi ∘ transport⁻ ⟨BG⟩≡∥X∥ ≡ Bi ∘ s
-  tr∘Bi∘tr≡Bi∘s = funExt (λ x → transportRefl (Bi (transport⁻ ⟨BG⟩≡∥X∥ x)) ∙ cong Bi (transportIsoToPath⁻ ⟨BG⟩≅∥X∥ x))
+  tr∘Bi∘tr≡Bi∘s = funExt (λ x → transportRefl (Bi (transport⁻ ⟨BG⟩≡∥X∥ x)) ∙ cong Bi (~uaβ ⟨BG⟩≃∥X∥ x))
 
   Bi≡Bi∘s∙ : PathP (λ i → (⟨BG⟩≡∥X∥ ∙ refl) i → ∥ ⟨ A ⟩ ∥ 3) Bi (Bi ∘ s)
   Bi≡Bi∘s∙ = compPathP'
@@ -94,7 +94,7 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
     tr∘Bi∘tr≡Bi∘s
 
   Bi≡Bi∘s : PathP (λ i → ⟨BG⟩≡∥X∥ i → ∥ ⟨ A ⟩ ∥ 3) Bi (Bi ∘ s)
-  Bi≡Bi∘s = subst (λ x → PathP (λ i → x i → ∥ ⟨ A ⟩ ∥ 3) Bi (Bi ∘ s)) (rUnit ⟨BG⟩≡∥X∥ ⁻¹) Bi≡Bi∘s∙
+  Bi≡Bi∘s = subst⁻ (λ x → PathP (λ i → x i → ∥ ⟨ A ⟩ ∥ 3) Bi (Bi ∘ s)) (rUnit ⟨BG⟩≡∥X∥) Bi≡Bi∘s∙
 
   Bi≡∥p∥∙ : PathP (λ i → (⟨BG⟩≡∥X∥ ∙ refl) i → ∥ ⟨ A ⟩ ∥ 3) Bi ∥p∥
   Bi≡∥p∥∙ = compPathP' {A = Type} {B = λ X → X → ∥ ⟨ A ⟩ ∥ 3}
@@ -108,7 +108,7 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
 
 
   Bi≡∥p∥ : PathP (λ i → ⟨BG⟩≡∥X∥ i → ∥ ⟨ A ⟩ ∥ 3) Bi ∥p∥
-  Bi≡∥p∥ = subst (λ r → PathP (λ i → r i → ∥ ⟨ A ⟩ ∥ 3) Bi ∥p∥) (rUnit ⟨BG⟩≡∥X∥ ⁻¹) Bi≡∥p∥∙
+  Bi≡∥p∥ = subst⁻ (λ r → PathP (λ i → r i → ∥ ⟨ A ⟩ ∥ 3) Bi ∥p∥) (rUnit ⟨BG⟩≡∥X∥) Bi≡∥p∥∙
 
   ∣x∣ : ∥ pullbackΣ Bi ∣_∣ ∥ 3
   ∣x∣ = ∣ pt BG , pt A , Bi-⋆ ∣
@@ -127,10 +127,10 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
     {p = ⟨BG⟩≡∥X∥}
     {q = refl}
     (transport-filler ⟨BG⟩≡∥X∥ (pt BG))
-    (transportIsoToPath ⟨BG⟩≅∥X∥ (pt BG))
+    (uaβ ⟨BG⟩≃∥X∥ (pt BG))
 
   ptBG≡∣x∣' : PathP (λ i → ⟨BG⟩≡∥X∥ i) (pt BG) ∣x∣'
-  ptBG≡∣x∣' = toPathP (transportRefl ∣x∣')
+  ptBG≡∣x∣' = subst⁻ (λ u → PathP (λ i → u i) (pt BG) ∣x∣') (rUnit ⟨BG⟩≡∥X∥) ptBG≡∣x∣'∙
 
 
   ∣x∣'≡∣x∣ : ∣x∣' ≡ ∣x∣
@@ -147,108 +147,3 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
 
   ptBG≡∣x∣ : PathP (λ i → ⟨BG⟩≡∥X∥ i) (pt BG) ∣ pt BG , pt A , Bi-⋆ ∣
   ptBG≡∣x∣ = subst (λ r → PathP (λ i → r i) (pt BG) ∣ pt BG , pt A , Bi-⋆ ∣) (rUnit ⟨BG⟩≡∥X∥ ⁻¹) ptBG≡∣x∣∙
-
-{-
-  lem₁ :
-      ∥-∥ₕ-elim
-      {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ a}
-      (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-      (λ _ b → b)
-      (Bi (pt BG))
-      refl
-      ≡
-      ∥-∥ₕ-elim
-      {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ Bi (pt BG)}
-      (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-      (λ _ b → refl)
-      (Bi (pt BG))
-      refl
-  lem₁ = cong₂
-    {A = (a : ∥ ⟨ A ⟩ ∥ 3) → Bi (pt BG) ≡ a → ∥ ⟨ A ⟩ ∥ 3}
-    {B = λ u → (a : ⟨ A ⟩) (r : Bi (pt BG) ≡ ∣ a ∣) → Bi (pt BG) ≡ u ∣ a ∣ r}
-    (λ u v →
-      ∥-∥ₕ-elim
-        {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ u a r}
-        (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-        v
-        (Bi (pt BG))
-        refl
-    ) (funExt (λ _ → funExt sym)) (symP (λ i _ r j → r (i ∧ j)))
-
-
-  {-
-  Bi⋆≡path : congP (λ i → Bi≡∥p∥∙ i) ptBG≡∣x∣∙ ≡ Bi-⋆
-  Bi⋆≡path =
-      congP (λ i → Bi≡∥p∥∙ i) ptBG≡∣x∣∙
-    ≡⟨ {!congP2!} ⟩ -- congP-compPathP' {B = λ X → X} _ _ ⟨BG⟩≡∥X∥ (pt BG) ∣x∣' ptBG≡∣x∣' _ refl ∣x∣ ∣x∣'≡∣x∣ Bi (Bi ∘ s) ∥p∥ Bi≡Bi∘s Bi∘s≡∥p∥ ⟩ -- attention, c'est lent, très lent
-      compPathP' {A = Type} {p = ⟨BG⟩≡∥X∥} {q = refl} (congP (λ i → Bi≡Bi∘s i) ptBG≡∣x∣') (congP (λ i → Bi∘s≡∥p∥ i) ∣x∣'≡∣x∣)
-    ≡⟨ cong₂ (compPathP' {A = Type} {p = ⟨BG⟩≡∥X∥} {q = refl}) congP1 congP2 ⟩
-      compPathP' {A = Type} {p = ⟨BG⟩≡∥X∥} {q = refl} (cong Bi (s∘t (pt BG)) ⁻¹) (cong Bi (s∘t (pt BG) ) ∙ Bi-⋆)
-    ≡⟨ compPathP'-nondep {r = ⟨BG⟩≡∥X∥} {s = refl} (cong Bi (s∘t (pt BG)) ⁻¹) (cong Bi (s∘t (pt BG) ) ∙ Bi-⋆) ⟩
-      (cong Bi (s∘t (pt BG)) ⁻¹) ∙ (cong Bi (s∘t (pt BG) ) ∙ Bi-⋆)
-    ≡⟨ assoc _ _ _ ⟩
-      ((cong Bi (s∘t (pt BG)) ⁻¹) ∙ cong Bi (s∘t (pt BG) )) ∙ Bi-⋆
-    ≡⟨ cong (_∙ Bi-⋆) (lCancel _) ∙ lUnit Bi-⋆ ⁻¹ ⟩
-      Bi-⋆ ∎
-
-  {-
-  ptBG≡∣x∣ : PathP (λ i → ⟨BG⟩≡∥X∥ i) (pt BG) ∣ pt BG , pt A , Bi-⋆ ∣
-  ptBG≡∣x∣ = toPathP (
-      transport ⟨BG⟩≡∥X∥ (pt BG)
-    ≡⟨ transportIsoToPath ⟨BG⟩≅∥X∥ (pt BG) ⟩
-      ∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) (Bi (pt BG)) refl
-    ≡⟨ cong₂ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣)) Bi-⋆ (toPathP ( substInPathsL Bi-⋆ refl ∙ lUnit _ ⁻¹)) ⟩
-      ∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) ∣ pt A ∣ Bi-⋆
-    ≡⟨⟩
-      ∣ pt BG , pt A , Bi-⋆ ∣ ∎)
-
-
-  Bi≡∥p∥ : PathP (λ i → ⟨BG⟩≡∥X∥ i → ∥ ⟨ A ⟩ ∥ 3) Bi ∥p∥
-  Bi≡∥p∥ = symP (subst (PathP (λ i → ⟨BG⟩≡∥X∥ (~ i) → ∥ ⟨ A ⟩ ∥ 3) ∥p∥) (funExt lemma) (funTypeTransp (λ X → X) (λ _ → ∥ ⟨ A ⟩ ∥ 3) (sym ⟨BG⟩≡∥X∥) ∥p∥)) where
-
-    lemma : (g : ⟨ BG ⟩) → transport refl (∥p∥ (transport ⟨BG⟩≡∥X∥ g)) ≡ Bi g
-    lemma g =
-        transport refl (∥p∥ (transport ⟨BG⟩≡∥X∥ g))
-      ≡⟨ transportRefl _ ⟩
-        ∥p∥ (transport ⟨BG⟩≡∥X∥ g)
-      ≡⟨ cong ∥p∥ (transportIsoToPath ⟨BG⟩≅∥X∥ g) ⟩
-        ∥p∥ (t g)
-      ≡⟨ ∥-∥ₕ-elim {B = λ x → ∥p∥ x ≡ Bi (s x)} (λ x → isOfHLevelTruncPath {x = ∥p∥ x}) (λ (_ , _ , q) → sym q) (t g) ⟩
-        Bi (s (t g))
-      ≡⟨ cong Bi (s∘t g) ⟩
-        Bi g ∎
-
-  -}
-  {-
-  lem : PathP (λ i → Σ (⟨BG⟩≡∥X∥ i × (⟨BG⟩≡∥X∥ i → ∥ ⟨ A ⟩ ∥ 3)) λ (x , f) → f x ≡ ∣ pt A ∣) ((pt BG ,  Bi), Bi-⋆ ) ((∣ pt BG , pt A , Bi-⋆ ∣ , ∥p∥), refl)
-  lem i = (
-    toPathP (transportIsoToPath ⟨BG⟩≅∥X∥ (pt BG)) i ,
-    let u = funTypeTransp (λ X → X) (λ _ → ∥ ⟨ A ⟩ ∥ 3) ⟨BG⟩≡∥X∥ Bi i in
-    {!!}
-      )
-     , {!!}
-  -}
-
-  {-
-  Bi⋆≡path : congP (λ i → Bi≡∥p∥ i) ptBG≡∣x∣ ≡ Bi-⋆
-  Bi⋆≡path = {!!}
-
-  Bi⋆≡refl : transport (λ i → congP (λ i a → Bi≡∥p∥ i a ≡ ∣ pt A ∣) ptBG≡∣x∣ i) Bi-⋆ ≡ refl
-  Bi⋆≡refl =
-      subst (λ x → x ≡ ∣ pt A ∣) (λ i → Bi≡∥p∥ i (ptBG≡∣x∣ i)) Bi-⋆
-    ≡⟨ substInPathsR (λ i → Bi≡∥p∥ i (ptBG≡∣x∣ i)) Bi-⋆ ⟩
-      (λ i → Bi≡∥p∥ i (ptBG≡∣x∣ i)) ⁻¹ ∙ Bi-⋆
-    ≡⟨ cong (λ x → x ⁻¹ ∙ Bi-⋆) Bi⋆≡path ⟩
-      Bi-⋆ ⁻¹ ∙ Bi-⋆
-    ≡⟨ lCancel Bi-⋆ ⟩
-      refl
-
-  {-
-  -}
-
-  leftInv : SubGroupπ₁'←PCCovering₀' A conA (SubGroupπ₁'→PCCovering₀' A conA ((BG , Bi) , Bi-⋆ , conBG , grpBG , Bi-fib)) ≡ ((BG , Bi) , Bi-⋆ , conBG , grpBG , Bi-fib)
-  leftInv = ΣPathP ((ΣPathP ((ΣPathP (⟨BG⟩≡∥X∥ , ptBG≡∣x∣)) , Bi≡∥p∥)) , ΣPathP ({!!} , toPathP (isProp× isConnected'IsProp (isProp× isPropIsGroupoid (isPropΠ (λ _ → isPropIsSet))) _ _))) ⁻¹
-
-  -}
--}
--}

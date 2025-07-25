@@ -3,6 +3,7 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.BiInvertible
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.HLevels
@@ -60,55 +61,176 @@ module RightInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((
 
   fibp̃-isSet : (a : ⟨ A ⟩) → isSet (fiber p̃ a)
   fibp̃-isSet a = SubgroupToCovering.p-isCov₀ A (∥ X , x ∥∙ 3) conA (CoveringToSubgroup.connected A (((X , x) , p) , p⋆ , hypCon , fib-set)) (CoveringToSubgroup.Bi∙ A (((X , x) , p) , (p⋆ , hypCon , fib-set))) a
+{-
+  e∘e'-mini-lemma₁ : (x : X) (a : ⟨ A ⟩) (q :  p x ≡ a) → e (e' (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣)) ≡ (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣)
+  e∘e'-mini-lemma₁ x a q =
+      e (e' (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣))
+    ≡⟨ cong (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣) ⟩
+      ∣ x ∣ , p x , refl
+    ≡⟨ cong₂ {C = λ _ _ → X̃} (λ u v → ∣ x ∣ , u , v) q (λ i j → ∣ q (i ∧ j) ∣) ⟩
+      ∣ x ∣ , a , cong ∣_∣ q
+    ≡⟨ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣) ⁻¹ ⟩
+      ∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣ ∎
+
+  e∘e'-mini-lemma₂ : (x : X) (a : ⟨ A ⟩) (q : p x ≡ a) → PathP (λ i → p̃ (e∘e'-mini-lemma₁ x a q i) ≡ a) (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd) refl
+  e∘e'-mini-lemma₂ x a q = toPathP lem
+    where
+
+    lem : subst (λ x → p̃ x ≡ a) (e∘e'-mini-lemma₁ x a q) (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd) ≡ refl
+    lem =
+        subst (λ x → p̃ x ≡ a) (
+          cong (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
+          ∙ cong₂ {C = λ _ _ → X̃} (λ u v → ∣ x ∣ , u , v) q (λ i j → ∣ q (i ∧ j) ∣)
+          ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣) ⁻¹
+          ∙ refl
+        ) (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd)
+      ≡⟨ substInPaths p̃ (λ _ → a) (
+          cong (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
+          ∙ cong₂ {C = λ _ _ → X̃} (λ u v → ∣ x ∣ , u , v) q (λ i j → ∣ q (i ∧ j) ∣)
+          ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣) ⁻¹
+          ∙ refl
+        ) (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd) ⟩
+        cong p̃ (
+          cong (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
+          ∙ cong₂ {C = λ _ _ → X̃} (λ u v → ∣ x ∣ , u , v) q (λ i j → ∣ q (i ∧ j) ∣)
+          ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣) ⁻¹
+          ∙ refl
+        ) ⁻¹
+        ∙ (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd)
+        ∙ refl
+      ≡⟨ cong (λ u → cong p̃ u ∙ (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd) ∙ refl) (lem₀
+        (cong (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣))
+        (cong₂ {C = λ _ _ → X̃} (λ u v → ∣ x ∣ , u , v) q (λ i j → ∣ q (i ∧ j) ∣))
+        (cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣) ⁻¹)
+        refl
+      )⟩
+        cong p̃ (
+          refl
+          ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣)
+          ∙ cong₂ {C = λ _ _ → X̃} (λ u v → ∣ x ∣ , u , v) q (λ i j → ∣ q (i ∧ j) ∣) ⁻¹
+          ∙ cong (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣) ⁻¹
+        )
+        ∙ (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd)
+        ∙ refl
+      ≡⟨ cong (λ u → u ∙ e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd ∙ refl) (
+        lem₁ p̃
+        refl
+        (cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣))
+        (cong₂ {C = λ _ _ → X̃} (λ u v → ∣ x ∣ , u , v) q (λ i j → ∣ q (i ∧ j) ∣) ⁻¹)
+        (cong (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣) ⁻¹)
+      )⟩
+        (refl
+        ∙ refl -- cong (λ u → a) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣) -- refl
+        ∙ q ⁻¹ -- cong₂ (λ u v → p̃ {!u!}) q (λ i j → ∣ q (i ∧ j) ∣) ⁻¹ -- = q ⁻¹
+        ∙ cong (λ u → p (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣) ⁻¹)
+        ∙ (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣)) .snd)
+        ∙ refl
+      ≡⟨ {!!} ⟩
+        (refl
+        ∙ refl
+        ∙ q ⁻¹
+        ∙ cong (λ u → p (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣) ⁻¹)
+        ∙ (q ∙ refl)
+        ∙ refl
+      ≡⟨ {!!} ⟩
+        (refl ∙ refl ∙ q ⁻¹ ∙ refl) -- cong (λ _ → x) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣) ⁻¹)
+        ∙ (q ∙ refl) ∙ refl
+      ≡⟨ {!!} ⟩
+        refl ∎
+
+      where
+
+        lem₀ :
+          {A : Type}
+          {a b c d e : A}
+          (p : a ≡ b)
+          (q : b ≡ c)
+          (r : c ≡ d)
+          (s : d ≡ e)
+          → (p ∙ q ∙ r ∙ s) ⁻¹ ≡ s ⁻¹ ∙ r ⁻¹ ∙ q ⁻¹ ∙ p ⁻¹
+        lem₀ p q r s =
+            (p ∙ q ∙ r ∙ s) ⁻¹
+          ≡⟨ sym-conc p (q ∙ r ∙ s) ⟩
+            (q ∙ r ∙ s) ⁻¹ ∙ p ⁻¹
+          ≡⟨ cong (_∙ p ⁻¹) (sym-conc q (r ∙ s)) ⟩
+            ((r ∙ s) ⁻¹ ∙ q ⁻¹) ∙ p ⁻¹
+          ≡⟨ assoc _ _ _ ⁻¹ ⟩
+            (r ∙ s) ⁻¹ ∙ q ⁻¹ ∙ p ⁻¹
+          ≡⟨ cong (λ u → u ∙ q ⁻¹ ∙ p ⁻¹) (sym-conc r s) ⟩
+            (s ⁻¹ ∙ r ⁻¹) ∙ q ⁻¹ ∙ p ⁻¹
+          ≡⟨ assoc _ _ _ ⁻¹ ⟩
+             s ⁻¹ ∙ r ⁻¹ ∙ q ⁻¹ ∙ p ⁻¹ ∎
+
+        lem₁ :
+            {A B : Type}
+            {a b c d e : A}
+            (f : A → B)
+            (p : a ≡ b)
+            (q : b ≡ c)
+            (r : c ≡ d)
+            (s : d ≡ e)
+            → cong f (p ∙ q ∙ r ∙ s) ≡ cong f p ∙ cong f q ∙ cong f r ∙ cong f s
+        lem₁ f p q r s =
+          cong f (p ∙ q ∙ r ∙ s)
+          ≡⟨ cong∙ f p (q ∙ r ∙ s) ⟩
+          cong f p ∙ cong f (q ∙ r ∙ s)
+          ≡⟨ cong (cong f p ∙_) (cong∙ f q (r ∙ s)) ⟩
+          cong f p ∙ cong f q ∙ cong f (r ∙ s)
+          ≡⟨ cong (λ u → cong f p ∙ cong f q ∙ u) (cong∙ f r s) ⟩
+          cong f p ∙ cong f q ∙ cong f r ∙ cong f s ∎
+-}
+  e∘e'-mini-lemma : (x : X) (a : ⟨ A ⟩) (q : ∣ p x ∣ ≡ ∣ a ∣) →
+    (e (e' (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) (transport (PathIdTrunc 2) q))) , e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) (transport (PathIdTrunc 2) q)) , refl) .snd)
+    ≡ ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) (transport (PathIdTrunc 2) q)) , (λ _ → p̃ (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) (transport (PathIdTrunc 2) q))))
+  e∘e'-mini-lemma x a q =
+      ∥-∥ₕ-elim
+      {B = λ q → (e (e' (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) q)) , (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) q) , refl)) .snd) ≡ ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) q), refl)}
+      (λ _ → isProp→isSet (fibp̃-isSet a _ _))
+      (λ q →
+            e (e' (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣)) , e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd
+          ≡⟨ cong {B = λ _ → fiber p̃ a}
+          (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a)
+                  (λ q → x , q ∙ refl) u .fst) ,
+                      ∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a)
+                      (λ q → x , q ∙ refl) u .snd) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
+          ⟩
+              e x , q ∙ refl
+          ≡⟨ cong {B = λ _ → fiber p̃ a} ( e x ,_ ) (rUnit q) ⁻¹ ⟩
+              e x , q
+          ≡⟨ cong₃ {A = ⟨ A ⟩} {B = λ a → ∥p∥ ∣ x ∣ ≡ ∣ a ∣} {C = λ a' _ → a' ≡ a} {D = λ _ _ _ → fiber p̃ a}
+              (λ u v w → (∣ x ∣ , u , v) , w) q (λ i j → ∣ q (i ∧ j) ∣) (λ i j → q (i ∨ j))
+          ⟩
+              (∣ x ∣ , a , cong ∣_∣ q) , refl
+          ≡⟨ cong {A = ∣ p x ∣ ≡ ∣ a ∣} {B = λ _ → fiber p̃ a }
+              (λ u → (∣ x ∣ , a , u) , refl) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣) ⁻¹
+          ⟩
+            (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl ∎
+      ) (transport (PathIdTrunc 2) q)
 
   e∘e'-lemma : (x̃ : X̃) → (e (e' x̃) , e'-fib (p̃ x̃) (x̃ , refl) .snd) ≡ (x̃  , refl)
   e∘e'-lemma (∣x∣ , a , q) =
         ∥-∥ₕ-elim {B = λ ∣x∣ → (q : ∥p∥ ∣x∣ ≡ ∣ a ∣) → (e (e' (∣x∣ , a , q)) , e'-fib a ((∣x∣ , a , q) , refl) .snd) ≡ ((∣x∣ , a , q) , refl)}
             (λ ∣x∣ → isOfHLevelΠ 3 λ q → isSet→isGroupoid (isProp→isSet (fibp̃-isSet (p̃ (∣x∣ , a , q)) _ _)))
             (λ x q →
-              subst (λ q → (e (e' (∣ x ∣ₕ , a , q)) , e'-fib a ((∣ x ∣ₕ , a , q) , refl) .snd) ≡ ((∣ x ∣ₕ , a , q) , refl)  ) (transport⁻Transport (PathIdTrunc 2) q) (
-                ∥-∥ₕ-elim
-                {B = λ q → (e (e' (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) q)) , (e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) q) , refl)) .snd) ≡ ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) q), refl)}
-                (λ _ → isProp→isSet (fibp̃-isSet a _ _))
-                (λ q →
-                        e (e' (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣)) , e'-fib a ((∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl) .snd
-                    ≡⟨⟩
-                        e ( ∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl)
-                            (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣)) .fst) ,
-                        ∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl)
-                            (transport (PathIdTrunc 2) (transport⁻ (PathIdTrunc 2) ∣ q ∣)) .snd
-                    ≡⟨ cong {B = λ _ → fiber p̃ a}
-                    (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a)
-                            (λ q → x , q ∙ refl) u .fst) ,
-                                ∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a)
-                                (λ q → x , q ∙ refl) u .snd) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
-                    ⟩
-                        e x , q ∙ refl
-                    ≡⟨ cong {B = λ _ → fiber p̃ a} ( e x ,_ ) (rUnit q ⁻¹) ⟩
-                        e x , q
-                    ≡⟨ cong₃ {A = ⟨ A ⟩} {B = λ a → ∥p∥ ∣ x ∣ ≡ ∣ a ∣} {C = λ a' _ → a' ≡ a} {D = λ _ _ _ → fiber p̃ a}
-                        (λ u v w → (∣ x ∣ , u , v) , w) q (λ i j → ∣ q (i ∧ j) ∣) (λ i j → q (i ∨ j))
-                    ⟩
-                        (∣ x ∣ , a , cong ∣_∣ q) , refl
-                    ≡⟨ cong {A = ∣ p x ∣ ≡ ∣ a ∣} {B = λ _ → fiber p̃ a }
-                        (λ u → (∣ x ∣ , a , u) , refl) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣ ⁻¹)
-                    ⟩
-                        (∣ x ∣ , a , transport⁻ (PathIdTrunc 2) ∣ q ∣) , refl ∎
-                )
-                (transport (PathIdTrunc 2) q))
+              subst (λ q → (e (e' (∣ x ∣ₕ , a , q)) , e'-fib a ((∣ x ∣ₕ , a , q) , refl) .snd) ≡ ((∣ x ∣ₕ , a , q) , refl)  )
+              (transport⁻Transport (PathIdTrunc 2) q) (e∘e'-mini-lemma x a q)
             ) ∣x∣ q
 
   e∘e' : (x̃ : X̃) → e (e' x̃) ≡ x̃
   e∘e' x̃ = cong fst (e∘e'-lemma x̃)
 
-  X≅X̃ : X ≅ X̃
-  X≅X̃ = iso e e' e∘e' e'∘e
+  X̃≃ᵇⁱX : BiInvEquiv X̃ X
+  X̃≃ᵇⁱX .BiInvEquiv.fun = e'
+  X̃≃ᵇⁱX .BiInvEquiv.invr = e
+  X̃≃ᵇⁱX .BiInvEquiv.invr-rightInv = e'∘e
+  X̃≃ᵇⁱX .BiInvEquiv.invl = e
+  X̃≃ᵇⁱX .BiInvEquiv.invl-leftInv = e∘e'
 
-  X≡X̃ : X ≡ X̃
-  X≡X̃ = isoToPath X≅X̃
+  X̃≃X : X̃ ≃ X
+  X̃≃X = biInvEquiv→Equiv-left X̃≃ᵇⁱX
 
   X̃≡X : X̃ ≡ X
-  X̃≡X = X≡X̃ ⁻¹
+  X̃≡X = ua X̃≃X
 
   x̃ : X̃
   x̃ = ∣ x ∣ , pt A , cong ∣_∣ p⋆
@@ -117,35 +239,53 @@ module RightInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((
   x̃≡tr-x̃ = transport-filler X̃≡X x̃
 
   tr-x̃≡e'x̃ : transport X̃≡X x̃ ≡ e' x̃
-  tr-x̃≡e'x̃ = transportIsoToPath⁻ X≅X̃ x̃
+  tr-x̃≡e'x̃ = uaβ X̃≃X x̃
 
   e'x̃≡x : e' x̃ ≡ x
   e'x̃≡x = refl
 
-  x≡x̃ : PathP (λ i → X≡X̃ i) x x̃
-  x≡x̃ = compPathP'
+  x≡x̃∙ : PathP (λ i → (X̃≡X ∙ refl) i) x̃ x
+  x≡x̃∙ = compPathP'
     {A = Type}
-    {B = λ x → {!Type!}}
-    {x' = x}
-    {y' = transport X≡X̃ x}
-    {z' = x̃}
-    {p = X≡X̃}
+    {B = λ x → x}
+    {x' = x̃}
+    {y' = transport X̃≡X x̃}
+    {z' = x}
+    {p = X̃≡X}
     {q = refl}
-    {!!}
-    {!!}
+    x̃≡tr-x̃
+    tr-x̃≡e'x̃
 
-  p̃≡tr∘p̃∘tr : PathP (λ i → X̃≡X i → ⟨ A ⟩) p̃ (transport refl ∘ p̃ ∘ transport X≡X̃)
+  x≡x̃ : PathP (λ i → X̃≡X i) x̃ x
+  x≡x̃ = subst⁻ (λ u → PathP (λ i → u i) x̃ x) (rUnit X̃≡X) x≡x̃∙
+
+  p̃≡tr∘p̃∘tr : PathP (λ i → X̃≡X i → ⟨ A ⟩) p̃ (transport refl ∘ p̃ ∘ transport⁻ X̃≡X)
   p̃≡tr∘p̃∘tr = funTypeTransp (λ X → X) (λ _ → ⟨ A ⟩) X̃≡X p̃
 
-  tr∘p̃∘tr≡p̃∘e : transport refl ∘ p̃ ∘ transport X≡X̃ ≡ p̃ ∘ e
-  tr∘p̃∘tr≡p̃∘e = funExt (λ x → transportRefl (p̃ (transport X≡X̃ x)) ∙ cong p̃ (transportIsoToPath X≅X̃ x))
+  tr∘p̃∘tr≡p̃∘e : transport refl ∘ p̃ ∘ transport⁻ X̃≡X ≡ p̃ ∘ e
+  tr∘p̃∘tr≡p̃∘e = funExt (λ x → transportRefl (p̃ (transport⁻ X̃≡X x)) ∙ cong p̃ (~uaβ X̃≃X x))
 
   p̃∘e≡p : p̃ ∘ e ≡ p
   p̃∘e≡p = refl
 
-  p≡p̃ : PathP (λ i → X≡X̃ i → ⟨ A ⟩) p p̃
-  p≡p̃ = {!compPath!}
+  p̃≡p∙ : PathP (λ i → (X̃≡X ∙ refl) i → ⟨ A ⟩) p̃ p
+  p̃≡p∙ =
+    compPathP'
+    {A = Type}
+    {B = λ x → x → ⟨ A ⟩}
+    {x' = p̃}
+    {y' = transport refl ∘ p̃ ∘ transport⁻ X̃≡X}
+    {z' = p}
+    {p = X̃≡X}
+    {q = refl}
+    p̃≡tr∘p̃∘tr
+    tr∘p̃∘tr≡p̃∘e
 
+  p̃≡p : PathP (λ i → X̃≡X i → ⟨ A ⟩) p̃ p
+  p̃≡p = subst⁻ (λ u → PathP (λ i → u i → ⟨ A ⟩) p̃ p) (rUnit X̃≡X) p̃≡p∙
+
+{-
   p⋆≡refl : PathP (λ i → p≡p̃ i (x≡x̃ i) ≡ pt A) p⋆ refl
   p⋆≡refl = {!!}
 
+-}
