@@ -2,7 +2,7 @@
 
 This repository contains the Cubical AGDA proof of the equivalence between subgroups of the fundamental groups and pointed connected coverings for a connected type $A$:
 $$ \mathrm{Subgroup}(\pi_1(A)) \simeq \mathrm{Covering}(A), $$
-as given in the paper \_Classifying covering types in homotopy type theory\* by Samuel MIMRAM and Émile OLEON.
+as given in the paper _Classifying covering types in homotopy type theory_ by Samuel MIMRAM and Émile OLEON.
 
 **_This formal proof isn't fully complete yet !_**
 
