@@ -27,56 +27,119 @@ module LeftInv.Part3 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((B
   open import LeftInv.Base A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
 
 
-  congP3 : congP (λ i → Bi∘s≡∥p∥ i) ∣x∣'≡∣x∣ ≡ cong Bi (s∘t (pt BG) ) ∙ Bi-⋆
-  congP3 =
-      congP (λ i → Bi∘s≡∥p∥ i) (cong₂ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣)) Bi-⋆ (λ i j → Bi-⋆ (i ∧ j)))
-    ≡⟨⟩
-      congP₂ {B = λ _ a → Bi (pt BG) ≡ a} {C = λ _ _ _ → ∥ ⟨ A ⟩ ∥ 3} (λ i a b → ∥-∥ₕ-elim {B = λ x → Bi (s x) ≡ ∥p∥ x} (λ x → isOfHLevelTruncPath {y = ∥p∥ x}) (λ (_ , _ , q) → q) (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a b) i) Bi-⋆ (λ i j → Bi-⋆ (i ∧ j))
-    ≡⟨ cong (λ x → congP₂ {B = λ _ a → Bi (pt BG) ≡ a} {C = λ _ _ _ → ∥ ⟨ A ⟩ ∥ 3} (λ i a b → x a b i) Bi-⋆ (λ i j → Bi-⋆ (i ∧ j))) lem₀ ⟩
-      congP
-       (λ i b →
+  abstract
+    congP3 : congP (λ i → Bi∘s≡∥p∥ i) ∣x∣'≡∣x∣ ≡ cong Bi (s∘t (pt BG) ) ∙ Bi-⋆
+    congP3 =
+        congP (λ i → Bi∘s≡∥p∥ i) (cong₂ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣)) Bi-⋆ (λ i j → Bi-⋆ (i ∧ j)))
+      ≡⟨⟩
+        congP₂ {B = λ _ a → Bi (pt BG) ≡ a} {C = λ _ _ _ → ∥ ⟨ A ⟩ ∥ 3} (λ i a b → ∥-∥ₕ-elim {B = λ x → Bi (s x) ≡ ∥p∥ x} (λ x → isOfHLevelTruncPath {y = ∥p∥ x}) (λ (_ , _ , q) → q) (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a b) i) Bi-⋆ (λ i j → Bi-⋆ (i ∧ j))
+      ≡⟨ cong (λ x → congP₂ {B = λ _ a → Bi (pt BG) ≡ a} {C = λ _ _ _ → ∥ ⟨ A ⟩ ∥ 3} (λ i a b → x a b i) Bi-⋆ (λ i j → Bi-⋆ (i ∧ j))) lem₀ ⟩
+        congP
+        (λ i b →
+            ∥-∥ₕ-elim
+            {B =
+            λ a →
+              (b : Bi (pt BG) ≡ a) →
+              Bi
+              (s
+                (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
+                (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
+                (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
+              ≡
+              ∥p∥
+              (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
+                (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
+                (λ a' b' → ∣ pt BG , a' , b' ∣) a b)}
+            (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
+            (λ a b → b) (Bi-⋆ i) b i)
+          (λ i j → Bi-⋆ (i ∧ j))
+      ≡⟨⟩
+        (λ i →
           ∥-∥ₕ-elim
           {B =
-           λ a →
-             (b : Bi (pt BG) ≡ a) →
-             Bi
-             (s
+            λ a →
+              (b : Bi (pt BG) ≡ a) →
+              Bi
+              (s
               (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
-               (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
-               (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
-             ≡
-             ∥p∥
-             (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
+                (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
+                (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
+              ≡
+              ∥p∥
+              (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
               (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
               (λ a' b' → ∣ pt BG , a' , b' ∣) a b)}
           (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-          (λ a b → b) (Bi-⋆ i) b i)
-        (λ i j → Bi-⋆ (i ∧ j))
-    ≡⟨⟩
-      (λ i →
-        ∥-∥ₕ-elim
-        {B =
-          λ a →
-            (b : Bi (pt BG) ≡ a) →
-            Bi
-            (s
-            (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
-              (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
-              (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
-            ≡
-            ∥p∥
-            (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
-            (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
-            (λ a' b' → ∣ pt BG , a' , b' ∣) a b)}
-        (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-        (λ a b → b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
-        i
-      )
-    ≡⟨ cong₂
-        {A = (a : ∥ ⟨ A ⟩ ∥ 3) (b : Bi (pt BG) ≡ a) → ∥ ⟨ A ⟩ ∥ 3}
-        {B = λ u → (a : ⟨ A ⟩) (b : Bi (pt BG) ≡ ∣ a ∣) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ z → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) ∣ a ∣ b)) ≡ u ∣ a ∣ b}
-        {C = λ u v → Bi (s ∣x∣') ≡ u ∣ pt A ∣ Bi-⋆}
-        (λ x y i →
+          (λ a b → b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
+          i
+        )
+      ≡⟨ cong₂
+          {A = (a : ∥ ⟨ A ⟩ ∥ 3) (b : Bi (pt BG) ≡ a) → ∥ ⟨ A ⟩ ∥ 3}
+          {B = λ u → (a : ⟨ A ⟩) (b : Bi (pt BG) ≡ ∣ a ∣) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ z → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) ∣ a ∣ b)) ≡ u ∣ a ∣ b}
+          {C = λ u v → Bi (s ∣x∣') ≡ u ∣ pt A ∣ Bi-⋆}
+          (λ x y i →
+              ∥-∥ₕ-elim
+              {B =
+                λ a →
+                  (b : Bi (pt BG) ≡ a) →
+                  Bi
+                  (s
+                  (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
+                    (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
+                    (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
+                  ≡
+                  x a b}
+              (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
+              (λ a b → y a b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
+              i
+            )
+          (λ i a b → lem₁ a b i)
+          refl
+      ⟩
+        (λ i →
+          ∥-∥ₕ-elim
+          {B =
+            λ a →
+              (b : Bi (pt BG) ≡ a) →
+              Bi
+              (s
+              (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
+                (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
+                (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
+              ≡ a}
+          (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
+          (λ a b → b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
+          i
+        )
+      ≡⟨ lem₂ ⟩
+        cong Bi (s∘t (pt BG)) ∙ Bi-⋆ ∎ where
+
+
+      lem₀ : (λ (a : ∥ ⟨ A ⟩ ∥ 3) (b : Bi (pt BG) ≡ a) → ∥-∥ₕ-elim
+            {B = λ x → Bi (s x) ≡ ∥p∥ x}
+            (λ x → isOfHLevelTruncPath {y = ∥p∥ x})
+            (λ (_ , _ , q) → q)
+            (∥-∥ₕ-elim
+              {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
+              (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3)
+              (λ a r → ∣ pt BG , a , r ∣)
+              a b))
+          ≡ ∥-∥ₕ-elim
+            {B = λ a → (b : Bi (pt BG) ≡ a) →
+              Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
+              ≡ ∥p∥ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) a b)   }
+            (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
+            (λ a b → b)
+      lem₀ = funExt (λ a → funExt (λ b → ∘-∥-∥ₕ-3-elim (λ ((_ , _ , q)) → q) (λ a b → pt BG , a , b) a b))
+
+      lem₁ : (a : ∥ ⟨ A ⟩ ∥ 3) (b : Bi (pt BG) ≡ a) → ∥p∥ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) a b) ≡ a
+      lem₁ = ∥-∥ₕ-elim
+        {B = λ a → (b : Bi (pt BG) ≡ a) → ∥p∥ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) a b) ≡ a}
+        (λ a → isGroupoidΠ λ _ → isOfHLevelTruncPath {y = a})
+        λ _ _ → refl
+
+      lem₂ :
+          (λ i →
             ∥-∥ₕ-elim
             {B =
               λ a →
@@ -87,128 +150,66 @@ module LeftInv.Part3 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((B
                   (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
                   (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
                 ≡
-                x a b}
+                a}
             (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-            (λ a b → y a b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
+            (λ a b → b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
             i
           )
-        (λ i a b → lem₁ a b i)
-        refl
-    ⟩
-      (λ i →
-        ∥-∥ₕ-elim
-        {B =
-          λ a →
-            (b : Bi (pt BG) ≡ a) →
-            Bi
-            (s
-            (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
-              (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
-              (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
-            ≡ a}
-        (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-        (λ a b → b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
-        i
-      )
-    ≡⟨ lem₂ ⟩
-      cong Bi (s∘t (pt BG)) ∙ Bi-⋆ ∎ where
-
-
-    lem₀ : (λ (a : ∥ ⟨ A ⟩ ∥ 3) (b : Bi (pt BG) ≡ a) → ∥-∥ₕ-elim
-          {B = λ x → Bi (s x) ≡ ∥p∥ x}
-          (λ x → isOfHLevelTruncPath {y = ∥p∥ x})
-          (λ (_ , _ , q) → q)
-          (∥-∥ₕ-elim
-            {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
-            (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3)
-            (λ a r → ∣ pt BG , a , r ∣)
-            a b))
-        ≡ ∥-∥ₕ-elim
-          {B = λ a → (b : Bi (pt BG) ≡ a) →
-            Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
-            ≡ ∥p∥ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) a b)   }
-          (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-          (λ a b → b)
-    lem₀ = funExt (λ a → funExt (λ b → ∘-∥-∥ₕ-3-elim (λ ((_ , _ , q)) → q) (λ a b → pt BG , a , b) a b))
-
-    lem₁ : (a : ∥ ⟨ A ⟩ ∥ 3) (b : Bi (pt BG) ≡ a) → ∥p∥ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) a b) ≡ a
-    lem₁ = ∥-∥ₕ-elim
-      {B = λ a → (b : Bi (pt BG) ≡ a) → ∥p∥ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3)) (λ a' b' → ∣ pt BG , a' , b' ∣) a b) ≡ a}
-      (λ a → isGroupoidΠ λ _ → isOfHLevelTruncPath {y = a})
-      λ _ _ → refl
-
-    lem₂ :
-        (λ i →
-          ∥-∥ₕ-elim
-          {B =
-            λ a →
-              (b : Bi (pt BG) ≡ a) →
-              Bi
-              (s
-              (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
-                (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
-                (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
-              ≡
-              a}
-          (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-          (λ a b → b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
-          i
-        )
-        ≡ cong Bi (s∘t (pt BG)) ∙ Bi-⋆
-    lem₂ = J (λ a Bi-⋆ →
-        (λ i →
-          ∥-∥ₕ-elim
-          {B =
-            λ a →
-              (b : Bi (pt BG) ≡ a) →
-              Bi
-              (s
-              (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
-                (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
-                (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
-              ≡
-              a
-              }
-          (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-          (λ a b → b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
-          i
-        )
-        ≡ cong Bi (s∘t (pt BG)) ∙ Bi-⋆
-      ) (
-        ∥-∥ₕ-elim
-        {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ a}
-        (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-        (λ _ b → b)
-        (Bi (pt BG))
-        refl
-      ≡⟨
-        cong₂
-            {A = (a : ∥ ⟨ A ⟩ ∥ 3) → Bi (pt BG) ≡ a → ∥ ⟨ A ⟩ ∥ 3}
-            {B = λ u → (a : ⟨ A ⟩) (r : Bi (pt BG) ≡ ∣ a ∣) → Bi (pt BG) ≡ u ∣ a ∣ r}
-            (λ u v →
+          ≡ cong Bi (s∘t (pt BG)) ∙ Bi-⋆
+      lem₂ = J (λ a Bi-⋆ →
+          (λ i →
             ∥-∥ₕ-elim
-                {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ u a r}
-                (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
-                v
-                (Bi (pt BG))
-                refl
-            ) (funExt (λ _ → funExt sym)) (symP (λ i _ r j → r (i ∧ j)))
-      ⟩
-        ∥-∥ₕ-elim
-        {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ Bi (pt BG)}
-        (λ _ → isOfHLevelΠ 3 (λ _ → isOfHLevelTruncPath {n = 3}))
-        (λ _ _ → refl)
-        (Bi (pt BG))
-        refl
-      ≡⟨ ∥-∥ₕ-elim-cong Bi (λ a r → s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) (λ _ _ → pt BG) (λ _ _ → refl) (Bi (pt BG)) refl {r = isOfHLevelTrunc 3} ⁻¹ ⟩
-        cong Bi (
+            {B =
+              λ a →
+                (b : Bi (pt BG) ≡ a) →
+                Bi
+                (s
+                (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
+                  (λ _ → isGroupoidΠ (λ _ → isOfHLevelTrunc 3))
+                  (λ a' b' → ∣ pt BG , a' , b' ∣) a b))
+                ≡
+                a
+                }
+            (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
+            (λ a b → b) (Bi-⋆ i) (λ j → Bi-⋆ (i ∧ j))
+            i
+          )
+          ≡ cong Bi (s∘t (pt BG)) ∙ Bi-⋆
+        ) (
           ∥-∥ₕ-elim
-          {B = λ a → (r : Bi (pt BG) ≡ a) → s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r) ≡ pt BG}
-          (λ _ → isGroupoidΠ λ _ → isSet→isGroupoid (grpBG _ _))
+          {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ a}
+          (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
+          (λ _ b → b)
+          (Bi (pt BG))
+          refl
+        ≡⟨
+          cong₂
+              {A = (a : ∥ ⟨ A ⟩ ∥ 3) → Bi (pt BG) ≡ a → ∥ ⟨ A ⟩ ∥ 3}
+              {B = λ u → (a : ⟨ A ⟩) (r : Bi (pt BG) ≡ ∣ a ∣) → Bi (pt BG) ≡ u ∣ a ∣ r}
+              (λ u v →
+              ∥-∥ₕ-elim
+                  {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ u a r}
+                  (λ a → isOfHLevelΠ 3 (λ b → isOfHLevelTruncPath {n = 3}))
+                  v
+                  (Bi (pt BG))
+                  refl
+              ) (funExt (λ _ → funExt sym)) (symP (λ i _ r j → r (i ∧ j)))
+        ⟩
+          ∥-∥ₕ-elim
+          {B = λ a → (r : Bi (pt BG) ≡ a) → Bi (s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) ≡ Bi (pt BG)}
+          (λ _ → isOfHLevelΠ 3 (λ _ → isOfHLevelTruncPath {n = 3}))
           (λ _ _ → refl)
           (Bi (pt BG))
           refl
-        )
-      ≡⟨ rUnit (cong Bi (s∘t (pt BG))) ⟩
-        cong Bi (s∘t (pt BG)) ∙ refl ∎
-      ) Bi-⋆
+        ≡⟨ ∥-∥ₕ-elim-cong Bi (λ a r → s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r)) (λ _ _ → pt BG) (λ _ _ → refl) (Bi (pt BG)) refl {r = isOfHLevelTrunc 3} ⁻¹ ⟩
+          cong Bi (
+            ∥-∥ₕ-elim
+            {B = λ a → (r : Bi (pt BG) ≡ a) → s (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) a r) ≡ pt BG}
+            (λ _ → isGroupoidΠ λ _ → isSet→isGroupoid (grpBG _ _))
+            (λ _ _ → refl)
+            (Bi (pt BG))
+            refl
+          )
+        ≡⟨ rUnit (cong Bi (s∘t (pt BG))) ⟩
+          cong Bi (s∘t (pt BG)) ∙ refl ∎
+        ) Bi-⋆

@@ -28,34 +28,45 @@ module LeftInv.Path (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
   open import LeftInv.Part1 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
   open import LeftInv.Part2 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
   open import LeftInv.Part3 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
+  open import LeftInv.Decompose1 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
+  open import LeftInv.Decompose2 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
 
-  part1 : congP (λ i → Bi≡tr∘Bi∘tr i) (transport-filler ⟨BG⟩≡∥X∥ (pt BG)) ≡
-    cong Bi (transport⁻Transport ⟨BG⟩≡∥X∥ (pt BG)) ⁻¹
-    ∙ transportRefl (Bi (transport⁻ ⟨BG⟩≡∥X∥ (transport ⟨BG⟩≡∥X∥ (pt BG)))) ⁻¹
-  part1 = congP1
+  abstract
+    part1 : congP (λ i → Bi≡tr∘Bi∘tr i) (transport-filler ⟨BG⟩≡∥X∥ (pt BG)) ≡
+      cong Bi (transport⁻Transport ⟨BG⟩≡∥X∥ (pt BG)) ⁻¹
+      ∙ transportRefl (Bi (transport⁻ ⟨BG⟩≡∥X∥ (transport ⟨BG⟩≡∥X∥ (pt BG)))) ⁻¹
+    part1 = congP1
 
-  part2 : congP (λ i → tr∘Bi∘tr≡Bi∘s i) (uaβ ⟨BG⟩≃∥X∥ (pt BG)) ≡
-    transportRefl (Bi (transport⁻ (ua ⟨BG⟩≃∥X∥) (transport (ua ⟨BG⟩≃∥X∥) (pt BG))))
-    ∙ cong Bi (transport⁻Transport (ua ⟨BG⟩≃∥X∥) (pt BG))
-    ∙ cong Bi (s∘t (pt BG)) ⁻¹
-  part2 = congP2
+    {-# NOINLINE part1 #-}
 
-  part3 : congP (λ i → Bi∘s≡∥p∥ i) ∣x∣'≡∣x∣ ≡ cong Bi (s∘t (pt BG) ) ∙ Bi-⋆
-  part3 = congP3
+    part2 : congP (λ i → tr∘Bi∘tr≡Bi∘s i) (uaβ ⟨BG⟩≃∥X∥ (pt BG)) ≡
+      transportRefl (Bi (transport⁻ (ua ⟨BG⟩≃∥X∥) (transport (ua ⟨BG⟩≃∥X∥) (pt BG))))
+      ∙ cong Bi (transport⁻Transport (ua ⟨BG⟩≃∥X∥) (pt BG))
+      ∙ cong Bi (s∘t (pt BG)) ⁻¹
+    part2 = congP2
+
+    {-# NOINLINE part2 #-}
+
+    part3 : congP (λ i → Bi∘s≡∥p∥ i) ∣x∣'≡∣x∣ ≡ cong Bi (s∘t (pt BG) ) ∙ Bi-⋆
+    part3 = congP3
+
+    {-# NOINLINE part3 #-}
 
   Bi⋆-result' : congP (λ i → Bi≡Bi∘s i) ptBG≡∣x∣' ≡ cong Bi (s∘t (pt BG)) ⁻¹
   Bi⋆-result' =
         congP (λ i → Bi≡Bi∘s i) ptBG≡∣x∣'
     ≡⟨ congP-subst-rUnit ⟨BG⟩≡∥X∥ Bi≡Bi∘s∙ ptBG≡∣x∣'∙ ⟩
         congP (λ i → Bi≡Bi∘s∙ i) ptBG≡∣x∣'∙
-    ≡⟨ congP-compPathP' {B = λ X → X} ⟨ BG ⟩ (∥ pullbackΣ Bi ∣_∣ ∥ 3) ⟨BG⟩≡∥X∥ (pt BG) (transport ⟨BG⟩≡∥X∥ (pt BG)) (transport-filler ⟨BG⟩≡∥X∥ (pt BG)) (∥ pullbackΣ Bi ∣_∣ ∥ 3) refl ∣x∣' (uaβ ⟨BG⟩≃∥X∥ (pt BG)) Bi (transport refl ∘ Bi ∘ transport⁻ ⟨BG⟩≡∥X∥) (Bi ∘ s) Bi≡tr∘Bi∘tr tr∘Bi∘tr≡Bi∘s ⟩
+    ≡⟨ decompose₂ ⟩
         compPathP'
+        {p = ⟨BG⟩≡∥X∥}
+        {q = refl}
         (congP (λ i → Bi≡tr∘Bi∘tr i) (transport-filler ⟨BG⟩≡∥X∥ (pt BG)))
         (congP (λ i → tr∘Bi∘tr≡Bi∘s i) (uaβ ⟨BG⟩≃∥X∥ (pt BG)))
     ≡⟨ compPathP'-nondep {r = ⟨BG⟩≡∥X∥} {s = refl} (congP (λ i → Bi≡tr∘Bi∘tr i) (transport-filler ⟨BG⟩≡∥X∥ (pt BG))) (congP (λ i → tr∘Bi∘tr≡Bi∘s i) (uaβ ⟨BG⟩≃∥X∥ (pt BG))) ⟩
         congP (λ i → Bi≡tr∘Bi∘tr i) (transport-filler ⟨BG⟩≡∥X∥ (pt BG))
         ∙ congP (λ i → tr∘Bi∘tr≡Bi∘s i) (uaβ ⟨BG⟩≃∥X∥ (pt BG))
-    ≡⟨ cong₂ _∙_ {!!} {!!} ⟩ -- part1 part2 ⟩
+    ≡⟨ cong₂ _∙_ part1 part2 ⟩
         (cong Bi (transport⁻Transport ⟨BG⟩≡∥X∥ (pt BG)) ⁻¹
         ∙ transportRefl (Bi (transport⁻ ⟨BG⟩≡∥X∥ (transport ⟨BG⟩≡∥X∥ (pt BG)))) ⁻¹)
         ∙ transportRefl (Bi (transport⁻ (ua ⟨BG⟩≃∥X∥) (transport (ua ⟨BG⟩≃∥X∥) (pt BG))))
@@ -96,8 +107,10 @@ module LeftInv.Path (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
         congP (λ i → Bi≡∥p∥ i) ptBG≡∣x∣
     ≡⟨ congP-subst-rUnit ⟨BG⟩≡∥X∥ Bi≡∥p∥∙ ptBG≡∣x∣∙ ⟩
         congP (λ i → Bi≡∥p∥∙ i) ptBG≡∣x∣∙
-    ≡⟨ congP-compPathP' {B = λ X → X} ⟨ BG ⟩ (∥ pullbackΣ Bi ∣_∣ ∥ 3) ⟨BG⟩≡∥X∥ (pt BG) ∣x∣' ptBG≡∣x∣' (∥ pullbackΣ Bi ∣_∣ ∥ 3) refl ∣x∣ ∣x∣'≡∣x∣ Bi (Bi ∘ s) ∥p∥ Bi≡Bi∘s Bi∘s≡∥p∥ ⟩
+    ≡⟨ decompose₁ ⟩
         compPathP'
+        {p = ⟨BG⟩≡∥X∥}
+        {q = refl}
         (congP (λ i → Bi≡Bi∘s i) ptBG≡∣x∣')
         (congP (λ i → Bi∘s≡∥p∥ i) ∣x∣'≡∣x∣)
     ≡⟨ compPathP'-nondep {r = ⟨BG⟩≡∥X∥} {s = refl} (congP (λ i → Bi≡Bi∘s i) ptBG≡∣x∣') (congP (λ i → Bi∘s≡∥p∥ i) ∣x∣'≡∣x∣) ⟩
@@ -105,9 +118,9 @@ module LeftInv.Path (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
         ∙ congP (λ i → Bi∘s≡∥p∥ i) ∣x∣'≡∣x∣
     ≡⟨ cong₂ _∙_ Bi⋆-result' part3 ⟩
       cong Bi (s∘t (pt BG)) ⁻¹ ∙ cong Bi (s∘t (pt BG) ) ∙ Bi-⋆
-    ≡⟨ assoc _ _ _ ⁻¹ ⟩
+    ≡⟨ assoc _ _ _ ⟩
       (cong Bi (s∘t (pt BG)) ⁻¹ ∙ cong Bi (s∘t (pt BG))) ∙ Bi-⋆
     ≡⟨ cong (_∙ Bi-⋆) (lCancel _) ⟩
       refl ∙ Bi-⋆
-    ≡⟨ rUnit _ ⁻¹ ⟩
+    ≡⟨ lUnit _ ⁻¹ ⟩
       Bi-⋆ ∎
