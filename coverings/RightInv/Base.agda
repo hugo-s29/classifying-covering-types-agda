@@ -289,3 +289,33 @@ module RightInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((
   p⋆≡refl = {!!}
 
 -}
+  postulate
+    tr∘tr∘tr-refl : {A : Type} (x : A) → cong (transport refl) (transport⁻Transport refl x) ≡ transportTransport⁻ refl (transport refl x)
+    {-
+    Proving that is giving a path from
+    λ i → transport refl (transportRefl (transportRefl x i) i)
+    to
+    λ i → transportRefl (transportRefl (transport refl x) i) i
+    which seems easy enough (and yet, I tried and can't do it).
+    This is true in classical HoTT because
+    transport refl x = x
+    transport⁻Transport refl u = refl {x = u}
+    transportTransport⁻ refl u = refl {x = u}
+    because it's defined by path induction.
+    So, this result, it's just:
+        cong id refl ≡ refl {x = x}
+    which is given by refl.
+
+    I'm admitting it, but if a Cubical proof exists, then I'll gladly add it here.
+    -}
+
+  abstract
+    tr∘tr∘tr :
+        {A B C : Type}
+        (p : A ≡ B)
+        (f : B → C)
+        (x : A)
+        → cong (f ∘ transport p) (transport⁻Transport p x) ≡ cong f (transportTransport⁻ p (transport p x))
+    tr∘tr∘tr {A = A} {C = C} = J (λ B p →
+        (f : B → C) (x : A) → cong (f ∘ transport p) (transport⁻Transport p x) ≡ cong f (transportTransport⁻ p (transport p x))
+        ) λ f → cong (cong f) ∘ tr∘tr∘tr-refl

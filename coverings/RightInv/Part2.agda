@@ -3,7 +3,6 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Equiv.BiInvertible
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.HLevels
@@ -16,13 +15,16 @@ open import Cubical.Foundations.Univalence
 open import Cubical.Functions.Fibration
 open import Cubical.Functions.Embedding
 open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥-∥ₕ-map ; elim to ∥-∥ₕ-elim ; map2 to ∥-∥ₕ-map2 ; elim2 to ∥-∥ₕ-elim2)
-open import Cubical.HITs.SetTruncation renaming (rec to ∥-∥₂-rec ; map to ∥-∥₂-map ; elim to ∥-∥₂-elim)
 open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; map2 to ∥-∥-map2 ; elim to ∥-∥-elim ; elim2 to ∥-∥-elim2 ; elim3 to ∥-∥-elim3)
 open import Cubical.Homotopy.Connected
+open import Cubical.WildCat.Base
+open import Base
+open import Pullback
 open import Paths
+open import UniversalCovering
 
+module RightInv.Part2 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
+  open import RightInv.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
 
-
-tr∘tr∘tr-refl : {A : Type} (x : A)
-  → cong (transport refl) (transport⁻Transport refl x) ≡ transportTransport⁻ refl (transport refl x)
-tr∘tr∘tr-refl {A} x = {!!}
+  congP2 : congP (λ i → tr∘p̃∘tr≡p̃∘e i) tr-x̃≡e'x̃ ≡ transportRefl (p̃ (transport⁻ X̃≡X (transport X̃≡X x̃))) ∙ cong p̃ (transport⁻Transport X̃≡X x̃) ∙ cong p̃ (e∘e' x̃) ⁻¹
+  congP2 = {!!}
