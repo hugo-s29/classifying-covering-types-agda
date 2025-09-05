@@ -12,6 +12,7 @@ IMPORT_RE = re.compile(r"^\s*(open )?import\s+([A-Za-z0-9_.]+)")
 IGNORE = ["./coverings.agda", "./test.agda", "./Inv.agda"]
 
 START_TIME = time.time()
+USE_PARALLELISM = True
 
 def module_name_to_path(modname: str, root: str) -> str:
     """Convert a module name to a file path, if it exists."""
@@ -88,6 +89,21 @@ def schedule_build(graph, reverse_graph, num_workers=8):
                         if pending_deps[dependent] == 0:
                             ready.append(dependent)
 
+def schedule_build_seq(graph, reverse_graph):
+    pending_deps = {file: len(deps) for file, deps in graph.items()}
+    ready = deque([file for file, count in pending_deps.items() if count == 0])
+    completed = set()
+
+    while ready:
+        file = ready.popleft()
+        success = run_agda(file)
+        if success:
+            completed.add(file)
+            for dependent in reverse_graph[file]:
+                pending_deps[dependent] -= 1
+                if pending_deps[dependent] == 0:
+                    ready.append(dependent)
+
 def log(message):
     now = time.time()
     elapsed = now - START_TIME
@@ -106,7 +122,10 @@ def main(root_dir):
     files = find_agda_files(root_dir)
     log(f"Found {len(files)} .agda files")
     graph, reverse_graph = build_dependency_graph(files, root_dir)
-    schedule_build(graph, reverse_graph, num_workers=os.cpu_count())
+    if USE_PARALLELISM:
+        schedule_build(graph, reverse_graph, num_workers=os.cpu_count())
+    else:
+        schedule_build_seq(graph, reverse_graph)
 
 if __name__ == "__main__":
     import sys
