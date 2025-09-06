@@ -27,7 +27,7 @@ module RightInv.Part2-Lemma (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A �
   open import RightInv.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set)
 
   lemma : (x : X) → e∘e' (e x) ≡ refl {x = e (e' (e x))}
-  lemma x = {!!}
+  lemma x = step₁ ∙ step₂ ∙ step₃ ∙ step₄ ∙ step₅ ∙ step₆ ∙ step₇ ∙ step₈ ∙ step₉ ∙ step₁₀
     where
     open import RightInv.Part2-Lemma.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
     open import RightInv.Part2-Lemma.Step1 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
@@ -39,3 +39,4 @@ module RightInv.Part2-Lemma (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A �
     open import RightInv.Part2-Lemma.Step7 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
     open import RightInv.Part2-Lemma.Step8 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
     open import RightInv.Part2-Lemma.Step9 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
+    open import RightInv.Part2-Lemma.Step10 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x

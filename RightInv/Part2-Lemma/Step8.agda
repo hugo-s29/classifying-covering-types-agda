@@ -13,12 +13,11 @@ module RightInv.Part2-Lemma.Step8 (A : Pointed ℓ-zero) (conA : isConnected' �
   open import RightInv.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set)
   open import RightInv.Part2-Lemma.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
 
+
   abstract
-    step₈ : cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) (transport (PathIdTrunc 2) refl)) ⁻¹
+    step₈ : cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) (transport (PathIdTrunc 2) q) .fst)) (transport⁻Transport (PathIdTrunc {A = ⟨ A ⟩} {a = p x} 2) refl) ⁻¹
       ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
       ≡ cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) (transport (PathIdTrunc 2) refl)) ⁻¹
-      ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) (transport (PathIdTrunc 2) refl))
-    step₈ = cong (λ u → (
-            cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) u) ⁻¹
-            ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) u)
-        )) (transportIsoToPath (PathIdTruncIso 2) refl) ⁻¹
+      ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
+    step₈ = cong (λ u → u ⁻¹ ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣))
+      (tr∘tr∘tr (PathIdTrunc {A = ⟨ A ⟩} 2) (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) refl)

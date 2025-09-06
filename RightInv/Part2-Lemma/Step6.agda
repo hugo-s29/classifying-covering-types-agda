@@ -13,15 +13,15 @@ module RightInv.Part2-Lemma.Step6 (A : Pointed ℓ-zero) (conA : isConnected' �
   open import RightInv.Part2-Lemma.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
 
   abstract
-    step₆ : cong (λ q → e(e' (∣ x ∣ , a , q))) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹
-      ∙ cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
-      ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹
-      ∙ cong {B = λ _ → X̃} (λ q → ∣ x ∣ , a , q)  (transport⁻Transport (PathIdTrunc 2) refl)
-      ≡ cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) (transport (PathIdTrunc 2) q) .fst)) (transport⁻Transport (PathIdTrunc {A = ⟨ A ⟩} {a = p x} 2) refl) ⁻¹
-      ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
-    step₆ = cong (λ u →
-          cong (λ q → e(e' (∣ x ∣ , a , q))) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹
+    step₆ : subst (λ q → e (e' (∣ x ∣ , a , q)) ≡ (∣ x ∣ , a , q)) (transport⁻Transport (PathIdTrunc 2) refl)
+        (cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a)
+                (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
+        ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣ ∙ cong (cong ∣_∣) (transport⁻Transport refl refl)) ⁻¹)
+        ≡ cong (λ q → e(e' (∣ x ∣ , a , q))) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹
         ∙ cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
-        ∙ u
-      ) (lCancel (cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transport⁻Transport (PathIdTrunc 2) refl)))
-      ∙ cong (λ u → cong (λ q → e(e' (∣ x ∣ , a , q))) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹ ∙ u) (rUnit (cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣))) ⁻¹
+        ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣ ∙ cong (cong ∣_∣) (transport⁻Transport refl refl)) ⁻¹
+        ∙ cong {B = λ _ → X̃} (λ q → ∣ x ∣ , a , q)  (transport⁻Transport (PathIdTrunc 2) refl)
+    step₆ = substInPaths (λ q → e(e' (∣ x ∣ , a , q))) (λ q → ∣ x ∣ , a , q) (transport⁻Transport (PathIdTrunc 2) refl) (
+            cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
+            ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣ ∙ cong (cong ∣_∣) (transport⁻Transport refl refl)) ⁻¹)
+            ∙ cong (cong (λ q → e(e' (∣ x ∣ , a , q))) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹ ∙_ ) (assoc _ _ _) ⁻¹

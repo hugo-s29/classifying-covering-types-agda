@@ -213,7 +213,8 @@ module RightInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((
             (λ ∣x∣ → isOfHLevelΠ 3 λ q → isSet→isGroupoid (isProp→isSet (fibp̃-isSet (p̃ (∣x∣ , a , q)) _ _)))
             (λ x q →
               subst (λ q → (e (e' (∣ x ∣ₕ , a , q)) , e'-fib a ((∣ x ∣ₕ , a , q) , refl) .snd) ≡ ((∣ x ∣ₕ , a , q) , refl)  )
-              (transport⁻Transport (PathIdTrunc 2) q) (e∘e'-mini-lemma x a q)
+              (transport⁻Transport (PathIdTrunc 2) q)
+              (e∘e'-mini-lemma x a q)
             ) ∣x∣ q
 
   e∘e' : (x̃ : X̃) → e (e' x̃) ≡ x̃

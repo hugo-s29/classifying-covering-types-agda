@@ -15,6 +15,10 @@ module RightInv.Part2-Lemma.Step9 (A : Pointed ℓ-zero) (conA : isConnected' �
 
   abstract
     step₉ : cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) (transport (PathIdTrunc 2) refl)) ⁻¹
+      ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
+      ≡ cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) (transport (PathIdTrunc 2) refl)) ⁻¹
       ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) (transport (PathIdTrunc 2) refl))
-      ≡ refl
-    step₉ = lCancel _
+    step₉ = cong (λ u → (
+            cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) u) ⁻¹
+            ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) u)
+        )) (transportIsoToPath (PathIdTruncIso 2) refl) ⁻¹

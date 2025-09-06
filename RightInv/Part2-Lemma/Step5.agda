@@ -1,4 +1,5 @@
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Isomorphism renaming (Iso to _≅_)
 open import Cubical.Foundations.Pointed
@@ -15,13 +16,15 @@ module RightInv.Part2-Lemma.Step5 (A : Pointed ℓ-zero) (conA : isConnected' �
   abstract
     step₅ : subst (λ q → e (e' (∣ x ∣ , a , q)) ≡ (∣ x ∣ , a , q)) (transport⁻Transport (PathIdTrunc 2) refl)
         (cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a)
-                (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
-        ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣ ∙ cong (cong ∣_∣) (transport⁻Transport refl refl)) ⁻¹)
-        ≡ cong (λ q → e(e' (∣ x ∣ , a , q))) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹
-        ∙ cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
+                  (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
+        ∙ refl
+        ∙ refl
         ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣ ∙ cong (cong ∣_∣) (transport⁻Transport refl refl)) ⁻¹
-        ∙ cong {B = λ _ → X̃} (λ q → ∣ x ∣ , a , q)  (transport⁻Transport (PathIdTrunc 2) refl)
-    step₅ = substInPaths (λ q → e(e' (∣ x ∣ , a , q))) (λ q → ∣ x ∣ , a , q) (transport⁻Transport (PathIdTrunc 2) refl) (
-            cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
-            ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣ ∙ cong (cong ∣_∣) (transport⁻Transport refl refl)) ⁻¹)
-            ∙ cong (cong (λ q → e(e' (∣ x ∣ , a , q))) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹ ∙_ ) (assoc _ _ _) ⁻¹
+        ∙ refl
+      ) ≡ subst (λ q → e (e' (∣ x ∣ , a , q)) ≡ (∣ x ∣ , a , q)) (transport⁻Transport (PathIdTrunc 2) refl)
+        (cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a)
+                  (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣)
+        ∙ cong {B = λ _ → X̃} (λ u → ∣ x ∣ , a , u) (transportIsoToPath⁻ (PathIdTruncIso 2) ∣ q ∣ ∙ cong (cong ∣_∣) (transport⁻Transport refl refl)) ⁻¹)
+    step₅ = cong (subst (λ q → e (e' (∣ x ∣ , a , q)) ≡ (∣ x ∣ , a , q)) (transport⁻Transport (PathIdTrunc 2) refl))
+      (cong (cong {B = λ _ → X̃} (λ u → e (∥-∥ₕ-elim {B = λ _ → fiber p a} (λ _ → fib-set a)
+                  (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) ∣ refl ∣) ∙_) (rUnit _ ∙ lUnit _ ∙ lUnit _) ⁻¹)
