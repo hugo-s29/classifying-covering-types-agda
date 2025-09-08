@@ -23,13 +23,13 @@ open import Pullback
 open import Paths
 open import UniversalCovering
 
-module LeftInv.Path (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib) : SubGroupπ₁' A) where
-  open import LeftInv.Base A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
-  open import LeftInv.Part1 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
-  open import LeftInv.Part2 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
-  open import LeftInv.Part3 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
-  open import LeftInv.Decompose1 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
-  open import LeftInv.Decompose2 A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
+module LeftInv.Path (A : Pointed ℓ-zero) ((subgroup BG Bi Bi-⋆ isBi isCon grpBG) : SubGroupπ₁ A) where
+  open import LeftInv.Base A (subgroup BG Bi Bi-⋆ isBi isCon grpBG)
+  open import LeftInv.Part1 A (subgroup BG Bi Bi-⋆ isBi isCon grpBG)
+  open import LeftInv.Part2 A (subgroup BG Bi Bi-⋆ isBi isCon grpBG)
+  open import LeftInv.Part3 A (subgroup BG Bi Bi-⋆ isBi isCon grpBG)
+  open import LeftInv.Decompose1 A (subgroup BG Bi Bi-⋆ isBi isCon grpBG)
+  open import LeftInv.Decompose2 A (subgroup BG Bi Bi-⋆ isBi isCon grpBG)
 
   abstract
     part1 : congP (λ i → Bi≡tr∘Bi∘tr i) (transport-filler ⟨BG⟩≡∥X∥ (pt BG)) ≡

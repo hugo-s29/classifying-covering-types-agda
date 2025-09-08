@@ -3,8 +3,8 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
 open import Base
 
-module RightInv.Part2-Lemma.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x') , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) (x : X) where
-  open import RightInv.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set)
+module RightInv.Part2-Lemma.Base (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) (x : ⟨ X∙ ⟩) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
 
   a : ⟨ A ⟩
   a = p x

@@ -22,24 +22,21 @@ open import Base
 open import Pullback
 open import Paths
 
-module UniversalCovering (A∙ : Pointed ℓ-zero) (_ : isConnected' ⟨ A∙ ⟩) where
-  A = ⟨ A∙ ⟩
-  ⋆A = pt A∙
-
-  Ã = Σ A (λ a → ∥ ⋆A ≡ a ∥ 2)
+module UniversalCovering (A : Pointed ℓ-zero) where
+  Ã = Σ ⟨ A ⟩ (λ a → ∥ pt A ≡ a ∥ 2)
 
   1-connected : isConnected 3 Ã
-  1-connected = ∣ ⋆A , ∣ refl ∣ ∣ , ∥-∥ₕ-elim {B = λ y → ∣ ⋆A , ∣ refl ∣ ∣ ≡ y} (λ y → isOfHLevelTruncPath {y = y})
-    (λ (a , p) → transport⁻ (PathIdTrunc 2) (∥-∥ₕ-elim {B = λ p → ∥ (⋆A , ∣ refl ∣) ≡ (a , p) ∥ 2} (λ _ → isOfHLevelTrunc 2)
-      (J (λ a p → ∥ (⋆A , ∣ refl ∣) ≡ (a , ∣ p ∣) ∥ 2) ∣ refl ∣) p))
+  1-connected = ∣ pt A , ∣ refl ∣ ∣ , ∥-∥ₕ-elim {B = λ y → ∣ pt A , ∣ refl ∣ ∣ ≡ y} (λ y → isOfHLevelTruncPath {y = y})
+    (λ (a , p) → transport⁻ (PathIdTrunc 2) (∥-∥ₕ-elim {B = λ p → ∥ (pt A , ∣ refl ∣) ≡ (a , p) ∥ 2} (λ _ → isOfHLevelTrunc 2)
+      (J (λ a p → ∥ (pt A , ∣ refl ∣) ≡ (a , ∣ p ∣) ∥ 2) ∣ refl ∣) p))
 
   connected : isConnected' Ã
-  connected = ∣ (⋆A , ∣ refl ∣) ∣₁ , lemma₂ where
+  connected = ∣ (pt A , ∣ refl ∣) ∣₁ , lemma₂ where
 
-    lemma₀ : (a b : A) (p : ⋆A ≡ a) (q : ⋆A ≡ b) → (a , ∣ p ∣) ≡ (b , ∣ q ∣)
-    lemma₀ a b = J (λ a p → (q : ⋆A ≡ b) → (a , ∣ p ∣) ≡ (b , ∣ q ∣)) (J (λ b q → (⋆A , ∣ refl ∣) ≡ (b , ∣ q ∣)) refl)
+    lemma₀ : (a b : ⟨ A ⟩) (p : pt A ≡ a) (q : pt A ≡ b) → (a , ∣ p ∣) ≡ (b , ∣ q ∣)
+    lemma₀ a b = J (λ a p → (q : pt A ≡ b) → (a , ∣ p ∣) ≡ (b , ∣ q ∣)) (J (λ b q → (pt A , ∣ refl ∣) ≡ (b , ∣ q ∣)) refl)
 
-    lemma₁ : (a : A) (p : ⋆A ≡ a) (y : Ã) → ∥ (a , ∣ p ∣) ≡ y ∥₁
+    lemma₁ : (a : ⟨ A ⟩) (p : pt A ≡ a) (y : Ã) → ∥ (a , ∣ p ∣) ≡ y ∥₁
     lemma₁ a p (b , q) = ∥-∥ₕ-elim {B = λ q → ∥ (a , ∣ p ∣) ≡ (b , q) ∥₁} (λ _ → isProp→isSet isPropPropTrunc) (λ q → ∣ lemma₀ a b p q ∣₁) q
 
     lemma₂ : (x y : Ã) → ∥ x ≡ y ∥₁

@@ -10,6 +10,7 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.Transport
 
 private
+  {- this is a special case of funTypeTransp -}
   transport-fun : ∀ {ℓ ℓ'} {A B : Type ℓ} {C : Type ℓ'} (p : A ≡ B) (f : A → C) (g : B → C) → (∀ x → f x ≡ g (transport p x)) → transport (λ i → p i → C) f ≡ g
   transport-fun {B = B} {C = C} p f =
     J (λ B p → (g : B → C) → (∀ x → f x ≡ g (transport p x)) → subst (λ X → X → C) p f ≡ g )
@@ -189,7 +190,7 @@ module PastingLemma-horizontal {ℓ : Level} {C D E F : Type ℓ} (α : D → E)
         let p = sym p' in (q : γ c ≡ β e) →
         subst (λ d → e ≡ α d) (lemma₂ p q) (subst (λ y → Σ D (λ b → δ y ≡ α b)) (lemma₁ p q) (d , refl) .snd) ≡ p
       ) (λ q →
-        let r = λ i → transp (λ _ → D) i d in
+        let r = transportRefl d in
           subst (λ d₁ → α d ≡ α d₁) (lemma₂ refl q) (subst (λ y → Σ D (λ b → δ y ≡ α b)) (lemma₁ refl q) (d , refl) .snd)
         ≡⟨⟩
           subst (λ d₁ → α d ≡ α d₁) (subst {y = d} (λ _ → subst {y = d} (λ _ → D) refl d ≡ d) refl r) (subst (λ d' → α d ≡ α d') (sym r) refl)

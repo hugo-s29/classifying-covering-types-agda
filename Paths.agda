@@ -19,7 +19,7 @@ open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥
 open import Cubical.HITs.SetTruncation renaming (rec to ∥-∥₂-rec ; map to ∥-∥₂-map ; elim to ∥-∥₂-elim)
 open import Cubical.HITs.PropositionalTruncation renaming (rec to ∥-∥-rec ; map to ∥-∥-map ; map2 to ∥-∥-map2 ; elim to ∥-∥-elim ; elim2 to ∥-∥-elim2 ; elim3 to ∥-∥-elim3)
 open import Cubical.Homotopy.Connected
-open import Cubical.WildCat.Base
+open import Base
 
 abstract
 
@@ -345,3 +345,22 @@ abstract
         ≡⟨ cong {B = λ _ → f a ≡ g b} (λ u i → u i (Q i)) (transportRefl P) ⟩
             congP (λ i → P i) Q ∎
         ) (rUnit p) P Q
+
+
+  isConnected'IsProp : {A : Type} → isProp (isConnected' A)
+  isConnected'IsProp {A} = isProp× isPropPropTrunc (isPropΠ λ _ → isPropΠ λ _ → isPropPropTrunc)
+
+  isConnected'Σ : {A : Type} {B : A → Type} → isConnected' A → (∀ x → isConnected' (B x)) → isConnected' (Σ A B)
+  isConnected'Σ {A} {B} (⋆A , hA) hB = basept , path where
+
+    basept' : ∥ ∥ Σ A B ∥₁ ∥₁
+    basept' = ∥-∥-map (λ ⋆A → ∥-∥-map (λ ⋆B → (⋆A , ⋆B)) (hB ⋆A .fst)) ⋆A
+
+    basept : ∥ Σ A B ∥₁
+    basept = transport (propTruncIdempotent isPropPropTrunc) basept'
+
+    path' : (a a' : A) (b : B a) (b' : B a') → ∥ ∥ (a , b) ≡ (a' , b') ∥₁ ∥₁
+    path' a a' b b' = ∥-∥-map (λ p → ∥-∥-map (λ q →  ΣPathTransport→PathΣ (a , b) (a' , b') (p , q)) (hB a' .snd (subst B p b) b')) (hA a a')
+
+    path : (x y : Σ A B) → ∥ x ≡ y ∥₁
+    path (a , b) (a' , b') = transport (propTruncIdempotent isPropPropTrunc) (path' a a' b b')

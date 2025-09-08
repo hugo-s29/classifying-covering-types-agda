@@ -23,8 +23,8 @@ open import Pullback
 open import Paths
 open import UniversalCovering
 
-module LeftInv.Decompose2 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib) : SubGroupπ₁' A) where
-  open import LeftInv.Base A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
+module LeftInv.Decompose2 (A : Pointed ℓ-zero) ((subgroup BG Bi Bi-⋆ isBi isCon grpBG) : SubGroupπ₁ A) where
+  open import LeftInv.Base A (subgroup BG Bi Bi-⋆ isBi isCon grpBG)
 
   abstract
     decompose₂ : congP (λ i → compPathP' {A = Type} {B = λ X → X → ∥ ⟨ A ⟩ ∥ 3} {x' = Bi}

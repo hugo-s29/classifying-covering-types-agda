@@ -21,11 +21,8 @@ open import Cubical.WildCat.Base
 open import Base
 open import Pullback
 
-module CoveringToSubgroup (A∙ : Pointed ℓ-zero) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A∙) where
-  A : Type
-  A = ⟨ A∙ ⟩
-
-  Bi : (∥ X ∥ 3) → (∥ A ∥ 3)
+module CoveringToSubgroup (A : Pointed ℓ-zero) ((covering X p pt⋆ fib-set isCon) : Covering A) where
+  Bi : (∥ ⟨ X ⟩ ∥ 3) → (∥ ⟨ A ⟩ ∥ 3)
   Bi = ∥-∥ₕ-map p
 
   --- F --> X --> ∥ X ∥
@@ -33,7 +30,7 @@ module CoveringToSubgroup (A∙ : Pointed ℓ-zero) ((((X , x) , p) , p⋆ , hyp
   --- v     v       v
   --- 1 --> A --> ∥ A ∥
 
-  fib-trunc-lemma : (a : A) → fiber p a ≡ fiber Bi ∣ a ∣
+  fib-trunc-lemma : (a : ⟨ A ⟩) → fiber p a ≡ fiber Bi ∣ a ∣
   fib-trunc-lemma a = isoToPath (iso to of s r) where
 
     to : fiber p a → fiber Bi ∣ a ∣
@@ -46,26 +43,26 @@ module CoveringToSubgroup (A∙ : Pointed ℓ-zero) ((((X , x) , p) , p⋆ , hyp
     s : section to of
     s (x , q) = ΣPathTransport→PathΣ (to (of (x , q))) (x , q) (l₁ x q , l₂) where
 
-      arg₁ : (x : ∥ X ∥ 3) → Bi x ≡ ∣ a ∣ → ∥ X ∥ 3
+      arg₁ : (x : ∥ ⟨ X ⟩ ∥ 3) → Bi x ≡ ∣ a ∣ → ∥ ⟨ X ⟩ ∥ 3
       arg₁ x q = ∣ ∥-∥ₕ-elim {B = λ x → Bi x ≡ ∣ a ∣ → fiber p a} (λ _ → isSet→isGroupoid (isSetΠ (λ _ → fib-set a)))
        (λ x → λ (q : ∣ p x ∣ ≡ ∣ a ∣) → ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) (transport (PathIdTrunc 2) q)) x q .fst ∣
 
-      l₁' : (x : X) (q : ∥ p x ≡ a ∥ 2) → Path (∥ X ∥ 3) ∣ ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) q .fst ∣ ∣ x ∣
-      l₁' x = ∥-∥ₕ-elim {B = λ q → Path (∥ X ∥ 3) ∣ ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) q .fst ∣ ∣ x ∣}
+      l₁' : (x : ⟨ X ⟩) (q : ∥ p x ≡ a ∥ 2) → Path (∥ ⟨ X ⟩ ∥ 3) ∣ ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) q .fst ∣ ∣ x ∣
+      l₁' x = ∥-∥ₕ-elim {B = λ q → Path (∥ ⟨ X ⟩ ∥ 3) ∣ ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) q .fst ∣ ∣ x ∣}
               (λ q → subst⁻ isSet (PathIdTrunc 2) (isOfHLevelTrunc 2)) λ _ → refl
 
-      l₁ : (x : ∥ X ∥ 3) (q : Bi x ≡ ∣ a ∣) → arg₁ x q ≡ x
+      l₁ : (x : ∥ ⟨ X ⟩ ∥ 3) (q : Bi x ≡ ∣ a ∣) → arg₁ x q ≡ x
       l₁ x q = ∥-∥ₕ-elim {B = λ x → ∀ q → arg₁ x q ≡ x}
         (λ x → isGroupoidΠ (λ q → isOfHLevelTruncPath {x = arg₁ x q} {y = x})) (λ x q → l₁' x (transport (PathIdTrunc 2) q)) x q
 
-      arg₂ : (x : ∥ X ∥ 3) → Bi x ≡ ∣ a ∣ → Bi x ≡ ∣ a ∣
+      arg₂ : (x : ∥ ⟨ X ⟩ ∥ 3) → Bi x ≡ ∣ a ∣ → Bi x ≡ ∣ a ∣
       arg₂ x q = subst (λ x → Bi x ≡ ∣ a ∣) (l₁ x q) (transport⁻ (PathIdTrunc 2) ∣ ∥-∥ₕ-elim {B = λ x → Bi x ≡ ∣ a ∣ → fiber p a}
         (λ _ → isSet→isGroupoid (isSetΠ (λ _ → fib-set a))) (λ x → λ (q : ∣ p x ∣ ≡ ∣ a ∣) → ∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q) (transport (PathIdTrunc 2) q)) x q .snd ∣)
 
-      l₂' : (x : ∥ X ∥ 3) (q : Bi x ≡ ∣ a ∣) → isGroupoid (arg₂ x q ≡ q)
+      l₂' : (x : ∥ ⟨ X ⟩ ∥ 3) (q : Bi x ≡ ∣ a ∣) → isGroupoid (arg₂ x q ≡ q)
       l₂' x q = isOfHLevelSuc 3 (isOfHLevelTruncPath {n = 3}) (arg₂ x q) q
 
-      l₂'' : (x : X) (q : ∥ p x ≡ a ∥ 2) → arg₂ ∣ x ∣ (transport⁻ (PathIdTrunc 2) q) ≡ (transport⁻ (PathIdTrunc 2) q)
+      l₂'' : (x : ⟨ X ⟩) (q : ∥ p x ≡ a ∥ 2) → arg₂ ∣ x ∣ (transport⁻ (PathIdTrunc 2) q) ≡ (transport⁻ (PathIdTrunc 2) q)
       l₂'' x = ∥-∥ₕ-elim {B = λ q → arg₂ ∣ x ∣ (transport⁻ (PathIdTrunc 2) q) ≡ (transport⁻ (PathIdTrunc 2) q)} (λ _ → isOfHLevelTruncPath {n = 3} _ _) (λ q →
           subst (λ x → Bi x ≡ ∣ a ∣) (l₁ ∣ x ∣ (transport⁻ (PathIdTrunc 2) ∣ q ∣)) (transport⁻ (PathIdTrunc 2) (
             ∣
@@ -97,11 +94,14 @@ module CoveringToSubgroup (A∙ : Pointed ℓ-zero) ((((X , x) , p) , p⋆ , hyp
     r : retract to of
     r (x , q) = cong (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q)) (transportTransport⁻ (PathIdTrunc 2) ∣ q ∣)
 
-  Bi∙ : (∥ (X , x) ∥∙ 3) B↪∙ (∥ A∙ ∥∙ 3)
-  Bi∙ = Bi ,  ∥-∥ₕ-elim (λ _ → isSet→isGroupoid (isProp→isSet isPropIsSet)) (λ a → subst isSet (fib-trunc-lemma a) (fib-set a)) , cong ∣_∣ p⋆
+  connected : isConnected' (∥ ⟨ X ⟩ ∥ 3)
+  connected = ∣ ∣ pt X ∣ ∣₁ , ∥-∥ₕ-elim2 (λ _ _ → isSet→isGroupoid (isProp→isSet isPropPropTrunc)) λ a b → ∥-∥-elim (λ _ → isPropPropTrunc) (∣_∣₁ ∘ cong ∣_∣) (isCon .snd a b)
 
-  connected : isConnected' (∥ X ∥ 3)
-  connected = ∣ ∣ x ∣ ∣₁ , ∥-∥ₕ-elim2 (λ _ _ → isSet→isGroupoid (isProp→isSet isPropPropTrunc)) λ a b → ∥-∥-elim (λ _ → isPropPropTrunc) (∣_∣₁ ∘ cong ∣_∣) (hypCon .snd a b)
+  isBi : (u : ∥ ⟨ A ⟩ ∥ 3) → isSet (fiber Bi u)
+  isBi = ∥-∥ₕ-elim (λ _ → isSet→isGroupoid (isProp→isSet isPropIsSet)) λ a → subst isSet (fib-trunc-lemma a) (fib-set a)
 
-  subgroup : SubGroupπ₁' A∙
-  subgroup = (((∥ X ∥ 3) , ∣ x ∣) , Bi∙ .fst) , Bi∙ .snd .snd , connected , isOfHLevelTrunc 3 , Bi∙ .snd .fst
+  isGrp : isGroupoid (∥ ⟨ X ⟩ ∥ 3)
+  isGrp = isOfHLevelTrunc 3
+
+  subgrp : SubGroupπ₁ A
+  subgrp = subgroup ((∥ ⟨ X ⟩ ∥ 3) , ∣ pt X ∣) Bi (cong ∣_∣ pt⋆) isBi connected isGrp

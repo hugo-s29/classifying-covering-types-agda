@@ -9,12 +9,13 @@ open import Cubical.Foundations.Transport
 open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥-∥ₕ-map ; elim to ∥-∥ₕ-elim ; map2 to ∥-∥ₕ-map2 ; elim2 to ∥-∥ₕ-elim2)
 open import Base
 
-module RightInv.Part2-Lemma.Step10 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x') , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) (x : X) where
-  open import RightInv.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set)
-  open import RightInv.Part2-Lemma.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
+module RightInv.Part2-Lemma.Step10 (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) (x : ⟨ X∙ ⟩) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  open import RightInv.Part2-Lemma.Base A (covering X∙ p p⋆ fib-set isCon) x
 
   abstract
-    step₁₀ : cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) (transport (PathIdTrunc 2) refl)) ⁻¹
-      ∙ cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc 2) (transport (PathIdTrunc 2) refl))
+    step₁₀ : 
+      cong (λ q → e(∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) (transport (PathIdTrunc 2) refl)) ⁻¹
+      ∙ cong (λ q → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) q .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) (transport (PathIdTrunc 2) refl))
       ≡ refl
-    step₁₀ = lCancel _
+    step₁₀ = lCancel (cong (λ u → e (∥-∥ₕ-elim (λ _ → fib-set a) (λ q → x , q ∙ refl) u .fst)) (transportTransport⁻ (PathIdTrunc {A = ⟨ A ⟩} 2) (transport (PathIdTrunc 2) refl)))

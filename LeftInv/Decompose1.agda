@@ -10,8 +10,8 @@ open import Base
 open import Pullback
 open import Paths
 
-module LeftInv.Decompose1 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib) : SubGroupπ₁' A) where
-  open import LeftInv.Base A conA ((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib)
+module LeftInv.Decompose1 (A : Pointed ℓ-zero) ((subgroup BG Bi Bi-⋆ isBi isCon grpBG) : SubGroupπ₁ A) where
+  open import LeftInv.Base A (subgroup BG Bi Bi-⋆ isBi isCon grpBG)
 
   abstract
     decompose₁ : congP (λ i →

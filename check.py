@@ -9,7 +9,7 @@ AGDA_CMD = ["agda", "-v0"]  # Adjust options as needed
 
 IMPORT_RE = re.compile(r"^\s*(open )?import\s+([A-Za-z0-9_.]+)")
 
-IGNORE = ["./coverings.agda", "./test.agda", "./Inv.agda"]
+IGNORE = ["./test.agda"]
 
 START_TIME = time.time()
 USE_PARALLELISM = True

@@ -23,8 +23,32 @@ open import Pullback
 open import Paths
 open import UniversalCovering
 
-module RightInv.Part2 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
-  open import RightInv.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
+module RightInv.Part2 (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  open import RightInv.Part2-Lemma A (covering X∙ p p⋆ fib-set isCon)
 
-  congP2 : congP (λ i → tr∘p̃∘tr≡p̃∘e i) tr-x̃≡e'x̃ ≡ transportRefl (p̃ (transport⁻ X̃≡X (transport X̃≡X x̃))) ∙ cong p̃ (transport⁻Transport X̃≡X x̃) ∙ cong p̃ (e∘e' x̃) ⁻¹
-  congP2 = {!!}
+  abstract
+    retEq≡e∘e' : (x̃ : X̃) → retEq X̃≃X x̃ ≡ e∘e' x̃
+    retEq≡e∘e' = retEq≡linv e' e e'∘e e∘e' (λ x → lemma x ⁻¹)
+
+    congP2 : congP (λ i → tr∘p̃∘tr≡p̃∘e i) tr-x̃≡e'x̃ ≡ transportRefl (p̃ (transport⁻ X̃≡X (transport X̃≡X x̃))) ∙ cong p̃ (transport⁻Transport X̃≡X x̃) ∙ cong p̃ (e∘e' x̃) ⁻¹
+    congP2 =
+        congP (λ i → tr∘p̃∘tr≡p̃∘e i) (uaβ X̃≃X x̃)
+      ≡⟨ cong (congP (λ i → tr∘p̃∘tr≡p̃∘e i)) (lUnit (uaβ X̃≃X x̃)) ⟩
+        congP (λ i x → (transportRefl ( p̃ (transport⁻ X̃≡X x)) ∙ cong p̃ (~uaβ X̃≃X x)) i) (refl ∙ uaβ X̃≃X x̃)
+      ≡⟨ congP∙ (λ i x → transportRefl ( p̃ (transport⁻ X̃≡X x)) i) (λ i x → cong p̃ (~uaβ X̃≃X x) i) refl (uaβ X̃≃X x̃) ⟩
+        congP (λ i x → transportRefl ( p̃ (transport⁻ X̃≡X x)) i) (refl {x = transport (ua X̃≃X) x̃})
+        ∙ congP (λ i x → cong p̃ (~uaβ X̃≃X x) i) (uaβ X̃≃X x̃)
+      ≡⟨⟩
+        transportRefl ( p̃ (transport⁻ X̃≡X (transport (ua X̃≃X) x̃)))
+        ∙ cong p̃ (congP (λ i x → ~uaβ X̃≃X x i) (uaβ X̃≃X x̃))
+      ≡⟨ cong (λ u → transportRefl ( p̃ (transport⁻ X̃≡X (transport (ua X̃≃X) x̃))) ∙ cong p̃ u) (ua-tr⁻Tr X̃≃X x̃) ⟩
+        transportRefl ( p̃ (transport⁻ (ua X̃≃X) (transport (ua X̃≃X) x̃)))
+        ∙ cong p̃ (transport⁻Transport (ua X̃≃X) x̃ ∙ retEq X̃≃X x̃ ⁻¹)
+      ≡⟨ cong (λ u → transportRefl ( p̃ (transport⁻ (ua X̃≃X) (transport (ua X̃≃X) x̃))) ∙ cong p̃ (transport⁻Transport (ua X̃≃X) x̃ ∙ u ⁻¹)) (retEq≡e∘e' x̃) ⟩
+        transportRefl ( p̃ (transport⁻ (ua X̃≃X) (transport (ua X̃≃X) x̃)))
+        ∙ cong p̃ (transport⁻Transport (ua X̃≃X) x̃ ∙ e∘e' x̃ ⁻¹)
+      ≡⟨ cong (transportRefl ( p̃ (transport⁻ (ua X̃≃X) (transport (ua X̃≃X) x̃))) ∙_) (cong∙ p̃ (transport⁻Transport (ua X̃≃X) x̃) (e∘e' x̃ ⁻¹)) ⟩
+        transportRefl ( p̃ (transport⁻ (ua X̃≃X) (transport (ua X̃≃X) x̃)))
+        ∙ cong p̃ (transport⁻Transport (ua X̃≃X) x̃)
+        ∙ cong p̃ (e∘e' x̃) ⁻¹ ∎

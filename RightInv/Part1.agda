@@ -23,8 +23,8 @@ open import Pullback
 open import Paths
 open import UniversalCovering
 
-module RightInv.Part1 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
-  open import RightInv.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
+module RightInv.Part1 (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
 
   congP1 : congP (λ i → p̃≡tr∘p̃∘tr i) x̃≡tr-x̃
     ≡ cong p̃ (transport⁻Transport X̃≡X x̃) ⁻¹ ∙ transportRefl (p̃ (transport⁻ X̃≡X (transport X̃≡X x̃))) ⁻¹

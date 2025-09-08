@@ -9,9 +9,9 @@ open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥
 open import Base
 open import Paths
 
-module RightInv.Part2-Lemma.Step2 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x') , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) (x : X) where
-  open import RightInv.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set)
-  open import RightInv.Part2-Lemma.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
+module RightInv.Part2-Lemma.Step2 (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) (x : ⟨ X∙ ⟩) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  open import RightInv.Part2-Lemma.Base A (covering X∙ p p⋆ fib-set isCon) x
 
   abstract
     lem-cong∙ : {A B : Type} (h : A → B) {a b c d e f : A} (p : a ≡ b) (q : b ≡ c) (r : c ≡ d) (s : d ≡ e) (t : e ≡ f) →

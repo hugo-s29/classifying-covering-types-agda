@@ -8,9 +8,9 @@ open import Cubical.Foundations.Transport
 open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥-∥ₕ-map ; elim to ∥-∥ₕ-elim ; map2 to ∥-∥ₕ-map2 ; elim2 to ∥-∥ₕ-elim2)
 open import Base
 
-module RightInv.Part2-Lemma.Step7 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x') , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) (x : X) where
-  open import RightInv.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set)
-  open import RightInv.Part2-Lemma.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
+module RightInv.Part2-Lemma.Step7 (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) (x : ⟨ X∙ ⟩) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  open import RightInv.Part2-Lemma.Base A (covering X∙ p p⋆ fib-set isCon) x
 
   abstract
     step₇ : cong (λ q → e(e' (∣ x ∣ , a , q))) (transport⁻Transport (PathIdTrunc 2) refl) ⁻¹

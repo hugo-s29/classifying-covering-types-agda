@@ -11,9 +11,9 @@ open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥
 open import Base
 open import Paths
 
-module RightInv.Part2-Lemma.Step3 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x') , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) (x : X) where
-  open import RightInv.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set)
-  open import RightInv.Part2-Lemma.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
+module RightInv.Part2-Lemma.Step3 (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) (x : ⟨ X∙ ⟩) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  open import RightInv.Part2-Lemma.Base A (covering X∙ p p⋆ fib-set isCon) x
 
   abstract
     step₃ : subst (λ q → e (e' (∣ x ∣ , a , q)) ≡ (∣ x ∣ , a , q) ) (transport⁻Transport (PathIdTrunc 2) refl)

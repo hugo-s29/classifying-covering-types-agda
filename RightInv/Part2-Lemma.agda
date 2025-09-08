@@ -23,20 +23,20 @@ open import Pullback
 open import Paths
 open import UniversalCovering
 
-module RightInv.Part2-Lemma (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x') , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
-  open import RightInv.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set)
+module RightInv.Part2-Lemma (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
 
   lemma : (x : X) → e∘e' (e x) ≡ refl {x = e (e' (e x))}
   lemma x = step₁ ∙ step₂ ∙ step₃ ∙ step₄ ∙ step₅ ∙ step₆ ∙ step₇ ∙ step₈ ∙ step₉ ∙ step₁₀
     where
-    open import RightInv.Part2-Lemma.Base A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step1 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step2 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step3 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step4 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step5 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step6 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step7 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step8 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step9 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
-    open import RightInv.Part2-Lemma.Step10 A conA (((X , x') , p) , p⋆ , hypCon , fib-set) x
+    open import RightInv.Part2-Lemma.Base A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step1 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step2 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step3 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step4 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step5 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step6 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step7 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step8 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step9 A (covering X∙ p p⋆ fib-set isCon) x
+    open import RightInv.Part2-Lemma.Step10 A (covering X∙ p p⋆ fib-set isCon) x

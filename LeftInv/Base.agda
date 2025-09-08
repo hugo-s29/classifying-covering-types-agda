@@ -24,11 +24,7 @@ open import Pullback
 open import Paths
 open import UniversalCovering
 
-module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG , Bi), Bi-⋆ , conBG , grpBG , Bi-fib) : SubGroupπ₁' A) where
-
-  Bi∙ : BG B↪∙ (∥ A ∥∙ 3)
-  Bi∙ = Bi , Bi-fib , Bi-⋆
-
+module LeftInv.Base (A : Pointed ℓ-zero) ((subgroup BG Bi Bi⋆ isBi isCon grpBG) : SubGroupπ₁ A) where
   t : ⟨ BG ⟩ → ∥ pullbackΣ Bi ∣_∣ ∥ 3
   t g = ∥-∥ₕ-elim
     {B = λ a → Bi g ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3}
@@ -111,7 +107,7 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
   Bi≡∥p∥ = subst⁻ (λ r → PathP (λ i → r i → ∥ ⟨ A ⟩ ∥ 3) Bi ∥p∥) (rUnit ⟨BG⟩≡∥X∥) Bi≡∥p∥∙
 
   ∣x∣ : ∥ pullbackΣ Bi ∣_∣ ∥ 3
-  ∣x∣ = ∣ pt BG , pt A , Bi-⋆ ∣
+  ∣x∣ = ∣ pt BG , pt A , Bi⋆ ∣
 
   ∣x∣' : ∥ pullbackΣ Bi ∣_∣ ∥ 3
   ∣x∣' = ∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣) (Bi (pt BG)) refl
@@ -134,9 +130,9 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
 
 
   ∣x∣'≡∣x∣ : ∣x∣' ≡ ∣x∣
-  ∣x∣'≡∣x∣ = cong₂ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣)) Bi-⋆ (λ i j → Bi-⋆ (i ∧ j))
+  ∣x∣'≡∣x∣ = cong₂ (∥-∥ₕ-elim {B = λ a → Bi (pt BG) ≡ a → ∥ pullbackΣ Bi ∣_∣ ∥ 3} (λ _ → isGroupoidΠ λ _ → isOfHLevelTrunc 3) (λ a r → ∣ pt BG , a , r ∣)) Bi⋆ (λ i j → Bi⋆ (i ∧ j))
 
-  ptBG≡∣x∣∙ : PathP (λ i → (⟨BG⟩≡∥X∥ ∙ refl) i) (pt BG) ∣ pt BG , pt A , Bi-⋆ ∣
+  ptBG≡∣x∣∙ : PathP (λ i → (⟨BG⟩≡∥X∥ ∙ refl) i) (pt BG) ∣ pt BG , pt A , Bi⋆ ∣
   ptBG≡∣x∣∙ = compPathP' {A = Type} {B = λ X → X}
     {x' = pt BG}
     {y' = ∣x∣'}
@@ -145,5 +141,5 @@ module LeftInv.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) (((BG
     ptBG≡∣x∣'
     ∣x∣'≡∣x∣
 
-  ptBG≡∣x∣ : PathP (λ i → ⟨BG⟩≡∥X∥ i) (pt BG) ∣ pt BG , pt A , Bi-⋆ ∣
-  ptBG≡∣x∣ = subst (λ r → PathP (λ i → r i) (pt BG) ∣ pt BG , pt A , Bi-⋆ ∣) (rUnit ⟨BG⟩≡∥X∥ ⁻¹) ptBG≡∣x∣∙
+  ptBG≡∣x∣ : PathP (λ i → ⟨BG⟩≡∥X∥ i) (pt BG) ∣ pt BG , pt A , Bi⋆ ∣
+  ptBG≡∣x∣ = subst (λ r → PathP (λ i → r i) (pt BG) ∣ pt BG , pt A , Bi⋆ ∣) (rUnit ⟨BG⟩≡∥X∥ ⁻¹) ptBG≡∣x∣∙

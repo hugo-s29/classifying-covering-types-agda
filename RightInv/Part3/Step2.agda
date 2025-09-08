@@ -15,9 +15,9 @@ open import Base
 open import Paths
 open import UniversalCovering
 
-module RightInv.Part3.Step2 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
-  open import RightInv.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
-  open import RightInv.Part3.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
+module RightInv.Part3.Step2 (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  open import RightInv.Part3.Base A (covering X∙ p p⋆ fib-set isCon)
 
   step₂ : cong (p̃ ∘ fst) (
     cong {B = λ _ → fiber p̃ (pt A)} (λ q → e (e' (∣ x ∣ , pt A , q)) , e'-fib (pt A) ((∣ x ∣ , pt A , q) , refl) .snd) (transport⁻Transport (PathIdTrunc 2) (cong ∣_∣ p⋆)) ⁻¹

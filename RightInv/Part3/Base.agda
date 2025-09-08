@@ -14,8 +14,9 @@ open import Cubical.HITs.Truncation renaming (rec to ∥-∥ₕ-rec ; map to ∥
 open import Base
 open import UniversalCovering
 
-module RightInv.Part3.Base (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
-  open import RightInv.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
+module RightInv.Part3.Base (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  x = pt X∙
 
   q : p x ≡ pt A
   q = transport refl (transport (λ i → p x ≡ p⋆ i) refl)

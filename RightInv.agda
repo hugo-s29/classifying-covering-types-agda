@@ -25,8 +25,9 @@ open import UniversalCovering
 import SubgroupToCovering
 import CoveringToSubgroup
 
-module RightInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
-  open import RightInv.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
+module RightInv (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  open import RightInv.Path A (covering X∙ p p⋆ fib-set isCon)
 
   abstract
     path : PathP (λ i → p̃≡p i (x≡x̃ i) ≡ pt A) refl p⋆
@@ -40,12 +41,19 @@ module RightInv (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x
           congP (λ i → p̃≡p i) x≡x̃ ⁻¹ ∙ refl
         ≡⟨ rUnit _ ⁻¹ ⟩
           congP (λ i → p̃≡p i) x≡x̃ ⁻¹
-        ≡⟨ {!!} ⟩
+        ≡⟨ cong sym p⋆-result ⟩
           p⋆ ∎
 
+    lem-isCov : PathP (λ i → (a : ⟨ A ⟩) → isSet (fiber (p̃≡p i) a)) (SubgroupToCovering.coveringA A (CoveringToSubgroup.subgrp A (covering X∙ p p⋆ fib-set isCon)) .Covering.isCov) fib-set
+    lem-isCov = isProp→PathP (λ _ → isPropΠ λ _ → isPropIsSet) _ _
 
+    lem-isCon : PathP (λ i → isConnected' (X̃≡X i)) (SubgroupToCovering.coveringA A (CoveringToSubgroup.subgrp A (covering X∙ p p⋆ fib-set isCon)) .Covering.isCon) isCon
+    lem-isCon = isProp→PathP (λ _ → isConnected'IsProp) _ _
 
-  rightInv :
-    let ((BG , Bi), Bi-⋆ , conBG , grpBG , fib-set') = CoveringToSubgroup.subgroup A (((X , x) , p) , p⋆ , hypCon , fib-set) in
-    SubgroupToCovering.connectedCovering₀ A BG conA conBG (Bi , fib-set' , Bi-⋆) ≡ (((X , x), p), p⋆ , hypCon , fib-set)
-  rightInv = ΣPathP ((ΣPathP ((ΣPathP (X̃≡X , x≡x̃)) , p̃≡p)) , ΣPathP ({!!} , toPathP (isProp× isConnected'IsProp (isPropΠ (λ _ → isPropIsSet)) _ _)))
+    rightInv : SubgroupToCovering.coveringA A (CoveringToSubgroup.subgrp A (covering X∙ p p⋆ fib-set isCon)) ≡ covering X∙ p p⋆ fib-set isCon
+    rightInv i .Covering.B .fst = X̃≡X i
+    rightInv i .Covering.B .snd = x≡x̃ i
+    rightInv i .Covering.f = p̃≡p i
+    rightInv i .Covering.pt⋆ = path i
+    rightInv i .Covering.isCov = lem-isCov i
+    rightInv i .Covering.isCon = lem-isCon i

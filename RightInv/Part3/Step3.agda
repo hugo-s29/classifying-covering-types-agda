@@ -15,9 +15,9 @@ open import Base
 open import Paths
 open import UniversalCovering
 
-module RightInv.Part3.Step3 (A : Pointed ℓ-zero) (conA : isConnected' ⟨ A ⟩) ((((X , x) , p) , p⋆ , hypCon , fib-set) : PCCovering₀' A) where
-  open import RightInv.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
-  open import RightInv.Part3.Base A conA (((X , x) , p) , p⋆ , hypCon , fib-set)
+module RightInv.Part3.Step3 (A : Pointed ℓ-zero) ((covering X∙ p p⋆ fib-set isCon) : Covering A) where
+  open import RightInv.Base A (covering X∙ p p⋆ fib-set isCon)
+  open import RightInv.Part3.Base A (covering X∙ p p⋆ fib-set isCon)
 
   abstract
     lem-cong∙ : {A B : Type} (h : A → B) {a b c d e f : A} (p : a ≡ b) (q : b ≡ c) (r : c ≡ d) (s : d ≡ e) (t : e ≡ f) →
