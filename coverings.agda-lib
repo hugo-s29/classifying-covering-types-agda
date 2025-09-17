@@ -1,4 +1,4 @@
 name: galois-correspondance
 include: .
 depend: cubical
-flags: --cubical --no-import-sorts --allow-unsolved-metas
+flags: --cubical --guardedness --no-import-sorts --allow-unsolved-metas
